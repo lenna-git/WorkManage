@@ -1454,13 +1454,23 @@ Ext.define('AM.controller.Devices', {
             layout: 'vbox',
             align: 'center',
             items: [{
-                xtype: 'textfield',
-                fieldLabel: '工作时间',
-                name: 'workTime',
+                xtype: 'datefield',
+                fieldLabel: '工作日期',
+                name: 'workDate',
                 width: 350,
                 labelWidth: 80,
                 margin: '10 0 10 0',
-                emptyText: '请输入工作时间，如：2026-07-27 09:00:00',
+                format: 'Y-m-d',
+                emptyText: '请选择工作日期',
+                allowBlank: false
+            }, {
+                xtype: 'textfield',
+                fieldLabel: '工作时间',
+                name: 'workTimePeriod',
+                width: 350,
+                labelWidth: 80,
+                margin: '0 0 10 0',
+                emptyText: '请输入时间段，如：09:00-12:00',
                 allowBlank: false
             }, {
                 xtype: 'textfield',
@@ -1489,11 +1499,16 @@ Ext.define('AM.controller.Devices', {
             }, {
                 text: '确定',
                 handler: function() {
-                    var workTime = addWindow.down('textfield[name=workTime]').getValue();
+                    var workDate = addWindow.down('datefield[name=workDate]').getValue();
+                    var workTimePeriod = addWindow.down('textfield[name=workTimePeriod]').getValue();
                     var workLocation = addWindow.down('textfield[name=workLocation]').getValue();
                     var workContent = addWindow.down('textfield[name=workContent]').getValue();
 
-                    if (!workTime || workTime.trim() === '') {
+                    if (!workDate) {
+                        Ext.Msg.alert('提示', '请选择工作日期');
+                        return;
+                    }
+                    if (!workTimePeriod || workTimePeriod.trim() === '') {
                         Ext.Msg.alert('提示', '请输入工作时间');
                         return;
                     }
@@ -1510,7 +1525,8 @@ Ext.define('AM.controller.Devices', {
                         url: 'workrecord/createWorkRecord',
                         method: 'POST',
                         jsonData: {
-                            workTime: workTime.trim(),
+                            workDate: Ext.Date.format(workDate, 'Y-m-d'),
+                            workTimePeriod: workTimePeriod.trim(),
                             workLocation: workLocation.trim(),
                             workContent: workContent.trim(),
                             detail: ''
@@ -1605,7 +1621,8 @@ Ext.define('AM.controller.Devices', {
     },
 
     onEditWorkRecordClick: function(recordId, record) {
-        var workTime = record.get('workTime');
+        var workDate = record.get('workDate');
+        var workTimePeriod = record.get('workTimePeriod');
         var workLocation = record.get('workLocation');
         var workContent = record.get('workContent');
 
@@ -1616,13 +1633,23 @@ Ext.define('AM.controller.Devices', {
             layout: 'vbox',
             align: 'center',
             items: [{
-                xtype: 'textfield',
-                fieldLabel: '工作时间',
-                name: 'workTime',
+                xtype: 'datefield',
+                fieldLabel: '工作日期',
+                name: 'workDate',
                 width: 350,
                 labelWidth: 80,
                 margin: '10 0 10 0',
-                value: workTime || '',
+                format: 'Y-m-d',
+                value: workDate ? new Date(workDate) : '',
+                allowBlank: false
+            }, {
+                xtype: 'textfield',
+                fieldLabel: '工作时间',
+                name: 'workTimePeriod',
+                width: 350,
+                labelWidth: 80,
+                margin: '0 0 10 0',
+                value: workTimePeriod || '',
                 allowBlank: false
             }, {
                 xtype: 'textfield',
@@ -1651,11 +1678,16 @@ Ext.define('AM.controller.Devices', {
             }, {
                 text: '确定',
                 handler: function() {
-                    var workTime = editWindow.down('textfield[name=workTime]').getValue();
+                    var workDate = editWindow.down('datefield[name=workDate]').getValue();
+                    var workTimePeriod = editWindow.down('textfield[name=workTimePeriod]').getValue();
                     var workLocation = editWindow.down('textfield[name=workLocation]').getValue();
                     var workContent = editWindow.down('textfield[name=workContent]').getValue();
 
-                    if (!workTime || workTime.trim() === '') {
+                    if (!workDate) {
+                        Ext.Msg.alert('提示', '请选择工作日期');
+                        return;
+                    }
+                    if (!workTimePeriod || workTimePeriod.trim() === '') {
                         Ext.Msg.alert('提示', '请输入工作时间');
                         return;
                     }
@@ -1673,7 +1705,8 @@ Ext.define('AM.controller.Devices', {
                         method: 'PUT',
                         jsonData: {
                             id: recordId,
-                            workTime: workTime.trim(),
+                            workDate: Ext.Date.format(workDate, 'Y-m-d'),
+                            workTimePeriod: workTimePeriod.trim(),
                             workLocation: workLocation.trim(),
                             workContent: workContent.trim()
                         },

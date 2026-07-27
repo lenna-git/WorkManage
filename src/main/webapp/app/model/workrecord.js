@@ -3,6 +3,8 @@ Ext.define('AM.model.workrecord',{
     fields:[
         {name:'id',type:'int'},
         {name:'workTime',type:'string'},
+        {name:'workDate',type:'string'},
+        {name:'workTimePeriod',type:'string'},
         {name:'workLocation',type:'string'},
         {name:'workContent',type:'string'},
         {name:'user',type:'auto'},

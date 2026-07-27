@@ -80,9 +80,14 @@ Ext.define('AM.view.device.workrecordgrid',{
             return rowIndex + 1;
         }
     },{
+        text:'工作日期',
+        align:'center',
+        dataIndex:'workDate',
+        flex:1
+    },{
         text:'工作时间',
         align:'center',
-        dataIndex:'workTime',
+        dataIndex:'workTimePeriod',
         flex:1
     },{
         text:'工作地点',

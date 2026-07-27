@@ -12,6 +12,12 @@ public class WorkRecord {
     @Column(name = "work_time")
     private String workTime;
 
+    @Column(name = "work_date")
+    private String workDate;
+
+    @Column(name = "work_time_period")
+    private String workTimePeriod;
+
     @Column(name = "work_location")
     private String workLocation;
 
@@ -42,6 +48,22 @@ public class WorkRecord {
 
     public void setWorkTime(String workTime) {
         this.workTime = workTime;
+    }
+
+    public String getWorkDate() {
+        return workDate;
+    }
+
+    public void setWorkDate(String workDate) {
+        this.workDate = workDate;
+    }
+
+    public String getWorkTimePeriod() {
+        return workTimePeriod;
+    }
+
+    public void setWorkTimePeriod(String workTimePeriod) {
+        this.workTimePeriod = workTimePeriod;
     }
 
     public String getWorkLocation() {

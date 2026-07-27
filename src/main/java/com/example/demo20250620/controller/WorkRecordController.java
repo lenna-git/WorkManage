@@ -159,6 +159,8 @@ public class WorkRecordController {
             }
 
             existing.setWorkTime(workRecord.getWorkTime());
+            existing.setWorkDate(workRecord.getWorkDate());
+            existing.setWorkTimePeriod(workRecord.getWorkTimePeriod());
             existing.setWorkLocation(workRecord.getWorkLocation());
             existing.setWorkContent(workRecord.getWorkContent());
 
@@ -289,7 +291,7 @@ public class WorkRecordController {
             Sheet sheet = workbook.createSheet("工作记录");
 
             Row headerRow = sheet.createRow(0);
-            String[] headers = {"序号", "工作时间", "工作地点", "工作内容", "用户", "详情"};
+            String[] headers = {"序号", "工作日期", "工作时间", "工作地点", "工作内容", "用户", "详情"};
             for (int i = 0; i < headers.length; i++) {
                 Cell cell = headerRow.createCell(i);
                 cell.setCellValue(headers[i]);
@@ -304,11 +306,12 @@ public class WorkRecordController {
             for (WorkRecord record : records) {
                 Row row = sheet.createRow(rowNum);
                 row.createCell(0).setCellValue(rowNum);
-                row.createCell(1).setCellValue(record.getWorkTime() != null ? record.getWorkTime() : "");
-                row.createCell(2).setCellValue(record.getWorkLocation() != null ? record.getWorkLocation() : "");
-                row.createCell(3).setCellValue(record.getWorkContent() != null ? record.getWorkContent() : "");
-                row.createCell(4).setCellValue(record.getUser() != null && record.getUser().getSysusername() != null ? record.getUser().getSysusername() : "");
-                row.createCell(5).setCellValue(record.getDetail() != null ? record.getDetail() : "");
+                row.createCell(1).setCellValue(record.getWorkDate() != null ? record.getWorkDate() : "");
+                row.createCell(2).setCellValue(record.getWorkTimePeriod() != null ? record.getWorkTimePeriod() : "");
+                row.createCell(3).setCellValue(record.getWorkLocation() != null ? record.getWorkLocation() : "");
+                row.createCell(4).setCellValue(record.getWorkContent() != null ? record.getWorkContent() : "");
+                row.createCell(5).setCellValue(record.getUser() != null && record.getUser().getSysusername() != null ? record.getUser().getSysusername() : "");
+                row.createCell(6).setCellValue(record.getDetail() != null ? record.getDetail() : "");
                 rowNum++;
             }
 

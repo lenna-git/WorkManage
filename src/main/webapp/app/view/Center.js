@@ -19,14 +19,14 @@ Ext.define('AM.view.Center',{
     ],
     items:[
         {
-            xtype:'devicelist',
-            id:'main-device',
-            title: 'card1:devices',
-        },
-        {
             xtype:'workrecord',
             id:'main-workrecord',
             title: '工作记录',
+        },
+        {
+            xtype:'devicelist',
+            id:'main-device',
+            title: 'card1:devices',
         },
         {
             width:'100%',

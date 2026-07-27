@@ -307,7 +307,7 @@ public class WorkRecordController {
                 row.createCell(1).setCellValue(record.getWorkTime() != null ? record.getWorkTime() : "");
                 row.createCell(2).setCellValue(record.getWorkLocation() != null ? record.getWorkLocation() : "");
                 row.createCell(3).setCellValue(record.getWorkContent() != null ? record.getWorkContent() : "");
-                row.createCell(4).setCellValue(record.getUser() != null && record.getUser().getUsername() != null ? record.getUser().getUsername() : "");
+                row.createCell(4).setCellValue(record.getUser() != null && record.getUser().getSysusername() != null ? record.getUser().getSysusername() : "");
                 row.createCell(5).setCellValue(record.getDetail() != null ? record.getDetail() : "");
                 rowNum++;
             }

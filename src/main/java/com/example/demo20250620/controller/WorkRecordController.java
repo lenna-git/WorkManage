@@ -89,6 +89,10 @@ public class WorkRecordController {
                 workRecord.setWorkTime(java.time.LocalDateTime.now().toString());
             }
 
+            if (workRecord.getDetail() == null || workRecord.getDetail().trim().isEmpty()) {
+                workRecord.setDetail("待确认");
+            }
+
             WorkRecord savedRecord = workRecordRepository.save(workRecord);
             responseObj.put("success", true);
             responseObj.put("message", "工作记录创建成功");
@@ -129,6 +133,45 @@ public class WorkRecordController {
         } catch (Exception e) {
             responseObj.put("success", false);
             responseObj.put("message", "工作记录更新失败: " + e.getMessage());
+        }
+        return responseObj;
+    }
+
+    @PutMapping("/approveWorkRecord/{id}")
+    public Map<String, Object> approveWorkRecord(@PathVariable Long id, jakarta.servlet.http.HttpServletRequest httpRequest) {
+        Map<String, Object> responseObj = new HashMap<>();
+        try {
+            jakarta.servlet.http.HttpSession session = httpRequest.getSession(false);
+            Integer currentUserRole = null;
+            if (session != null) {
+                Optional<SysUser> currentUser = (Optional<SysUser>) session.getAttribute("SYS_USER");
+                if (currentUser.isPresent()) {
+                    currentUserRole = currentUser.get().getSysuserrole().intValue();
+                }
+            }
+
+            if (currentUserRole == null || currentUserRole != 1) {
+                responseObj.put("success", false);
+                responseObj.put("message", "只有管理员才能审核工作记录");
+                return responseObj;
+            }
+
+            Optional<WorkRecord> existingOpt = workRecordRepository.findById(id);
+            if (!existingOpt.isPresent()) {
+                responseObj.put("success", false);
+                responseObj.put("message", "记录不存在");
+                return responseObj;
+            }
+
+            WorkRecord existing = existingOpt.get();
+            existing.setDetail("审核通过");
+
+            workRecordRepository.save(existing);
+            responseObj.put("success", true);
+            responseObj.put("message", "工作记录审核通过");
+        } catch (Exception e) {
+            responseObj.put("success", false);
+            responseObj.put("message", "工作记录审核失败: " + e.getMessage());
         }
         return responseObj;
     }

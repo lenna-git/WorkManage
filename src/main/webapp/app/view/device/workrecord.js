@@ -94,7 +94,15 @@ Ext.define('AM.view.device.workrecordgrid',{
         text:'详情',
         align:'center',
         dataIndex:'detail',
-        flex:2
+        flex:2,
+        renderer: function(value, metaData, record) {
+            var role = SYS_USER ? SYS_USER.sysuserrole : null;
+            var detail = value || '待确认';
+            if (detail === '待确认' && role === 1) {
+                return '<a href="#" class="approve-workrecord-link" data-id="' + record.get('id') + '" style="color: blue; text-decoration: underline;">待确认</a>';
+            }
+            return detail;
+        }
     }],
     bbar: {
         xtype: 'pagingtoolbar',

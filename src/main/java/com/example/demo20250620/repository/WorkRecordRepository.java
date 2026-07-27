@@ -23,4 +23,7 @@ public interface WorkRecordRepository extends JpaRepository<WorkRecord, Long> {
 
     @Query("SELECT wr FROM WorkRecord wr LEFT JOIN FETCH wr.user WHERE wr.user.id = :userId AND (wr.workContent LIKE %:keyword% OR wr.workLocation LIKE %:keyword%)")
     Page<WorkRecord> findByUserIdAndKeyword(Long userId, String keyword, Pageable pageable);
+
+    @Query("SELECT wr FROM WorkRecord wr LEFT JOIN FETCH wr.user")
+    List<WorkRecord> findAllWithUser();
 }

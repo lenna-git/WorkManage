@@ -44,6 +44,15 @@ Ext.define('AM.view.device.workrecord' ,{
                     minWidth: 60,
                     margin: '0 3 0 0',
                     padding: '3 10'
+                },
+                {
+                    xtype: 'button',
+                    action: 'exportworkrecords',
+                    text: '导出Excel',
+                    minWidth: 80,
+                    margin: '0 3 0 0',
+                    padding: '3 10',
+                    hidden: SYS_USER ? SYS_USER.sysuserrole !== 1 : true
                 }
             ]
         },

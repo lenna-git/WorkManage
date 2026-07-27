@@ -4,11 +4,15 @@ import com.example.demo20250620.entity.SysUser;
 import com.example.demo20250620.entity.WorkRecord;
 import com.example.demo20250620.repository.SysUserRepository;
 import com.example.demo20250620.repository.WorkRecordRepository;
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -259,5 +263,76 @@ public class WorkRecordController {
             responseObj.put("message", "工作记录删除失败: " + e.getMessage());
         }
         return responseObj;
+    }
+
+    @GetMapping("/exportWorkRecords")
+    public void exportWorkRecords(jakarta.servlet.http.HttpServletRequest httpRequest, jakarta.servlet.http.HttpServletResponse httpResponse) {
+        try {
+            jakarta.servlet.http.HttpSession session = httpRequest.getSession(false);
+            Integer currentUserRole = null;
+            if (session != null) {
+                Optional<SysUser> currentUser = (Optional<SysUser>) session.getAttribute("SYS_USER");
+                if (currentUser.isPresent()) {
+                    currentUserRole = currentUser.get().getSysuserrole().intValue();
+                }
+            }
+
+            if (currentUserRole == null || currentUserRole != 1) {
+                httpResponse.setStatus(403);
+                httpResponse.getWriter().write("只有管理员才能导出工作记录");
+                return;
+            }
+
+            List<WorkRecord> records = workRecordRepository.findAllWithUser();
+
+            Workbook workbook = new XSSFWorkbook();
+            Sheet sheet = workbook.createSheet("工作记录");
+
+            Row headerRow = sheet.createRow(0);
+            String[] headers = {"序号", "工作时间", "工作地点", "工作内容", "用户", "详情"};
+            for (int i = 0; i < headers.length; i++) {
+                Cell cell = headerRow.createCell(i);
+                cell.setCellValue(headers[i]);
+                CellStyle style = workbook.createCellStyle();
+                Font font = workbook.createFont();
+                font.setBold(true);
+                style.setFont(font);
+                cell.setCellStyle(style);
+            }
+
+            int rowNum = 1;
+            for (WorkRecord record : records) {
+                Row row = sheet.createRow(rowNum);
+                row.createCell(0).setCellValue(rowNum);
+                row.createCell(1).setCellValue(record.getWorkTime() != null ? record.getWorkTime() : "");
+                row.createCell(2).setCellValue(record.getWorkLocation() != null ? record.getWorkLocation() : "");
+                row.createCell(3).setCellValue(record.getWorkContent() != null ? record.getWorkContent() : "");
+                row.createCell(4).setCellValue(record.getUser() != null && record.getUser().getUsername() != null ? record.getUser().getUsername() : "");
+                row.createCell(5).setCellValue(record.getDetail() != null ? record.getDetail() : "");
+                rowNum++;
+            }
+
+            for (int i = 0; i < headers.length; i++) {
+                sheet.autoSizeColumn(i);
+            }
+
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            workbook.write(outputStream);
+            workbook.close();
+
+            byte[] excelBytes = outputStream.toByteArray();
+
+            httpResponse.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+            httpResponse.setHeader("Content-Disposition", "attachment; filename=work_records.xlsx");
+            httpResponse.setContentLength(excelBytes.length);
+
+            httpResponse.getOutputStream().write(excelBytes);
+            httpResponse.getOutputStream().flush();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }

@@ -32,6 +32,9 @@ Ext.define('AM.controller.Devices', {
             'viewport > panel > centerpage > workrecord toolbar button[action=deleteworkrecord]':{
                 click: this.onDeleteWorkRecordClick
             },
+            'viewport > panel > centerpage > workrecord toolbar button[action=exportworkrecords]':{
+                click: this.onExportWorkRecordsClick
+            },
             'viewport > panel > centerpage > workrecord workrecordgrid':{
                 cellclick: this.onWorkRecordCellClick
             },
@@ -1698,6 +1701,11 @@ Ext.define('AM.controller.Devices', {
         });
 
         editWindow.show();
+    },
+
+    onExportWorkRecordsClick: function() {
+        var url = 'workrecord/exportWorkRecords';
+        window.location.href = url;
     },
 
     onDeleteWorkRecordClick: function(recordId) {

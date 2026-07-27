@@ -35,6 +35,9 @@ Ext.define('AM.controller.Devices', {
             'viewport > panel > centerpage > workrecord toolbar button[action=exportworkrecords]':{
                 click: this.onExportWorkRecordsClick
             },
+            'viewport > panel > centerpage > workrecord toolbar button[action=approveallworkrecords]':{
+                click: this.onApproveAllWorkRecordsClick
+            },
             'viewport > panel > centerpage > workrecord workrecordgrid':{
                 cellclick: this.onWorkRecordCellClick
             },
@@ -1739,6 +1742,33 @@ Ext.define('AM.controller.Devices', {
     onExportWorkRecordsClick: function() {
         var url = 'workrecord/exportWorkRecords';
         window.location.href = url;
+    },
+
+    onApproveAllWorkRecordsClick: function() {
+        Ext.Msg.confirm('确认审核', '确定要一键审核所有待确认的工作记录吗？', function(btn) {
+            if (btn === 'yes') {
+                Ext.Ajax.request({
+                    url: 'workrecord/approveAllWorkRecords',
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    success: function(response, opts) {
+                        var obj = Ext.decode(response.responseText);
+                        if (obj.success) {
+                            Ext.Msg.alert('成功', obj.message);
+                            var store = Ext.data.StoreMgr.lookup('workrecordstore');
+                            store.reload();
+                        } else {
+                            Ext.Msg.alert('失败', obj.message);
+                        }
+                    },
+                    failure: function(response, opts) {
+                        Ext.Msg.alert('错误', '批量审核工作记录失败，请稍后重试');
+                    }
+                });
+            }
+        });
     },
 
     onDeleteWorkRecordClick: function(recordId) {

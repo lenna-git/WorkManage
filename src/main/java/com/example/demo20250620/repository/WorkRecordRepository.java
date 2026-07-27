@@ -26,4 +26,7 @@ public interface WorkRecordRepository extends JpaRepository<WorkRecord, Long> {
 
     @Query("SELECT wr FROM WorkRecord wr LEFT JOIN FETCH wr.user")
     List<WorkRecord> findAllWithUser();
+
+    @Query("SELECT wr FROM WorkRecord wr WHERE wr.detail = '待确认'")
+    List<WorkRecord> findByDetailPending();
 }

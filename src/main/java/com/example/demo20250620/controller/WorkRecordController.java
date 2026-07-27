@@ -267,6 +267,48 @@ public class WorkRecordController {
         return responseObj;
     }
 
+    @PutMapping("/approveAllWorkRecords")
+    public Map<String, Object> approveAllWorkRecords(jakarta.servlet.http.HttpServletRequest httpRequest) {
+        Map<String, Object> responseObj = new HashMap<>();
+        try {
+            jakarta.servlet.http.HttpSession session = httpRequest.getSession(false);
+            Integer currentUserRole = null;
+            if (session != null) {
+                Optional<SysUser> currentUser = (Optional<SysUser>) session.getAttribute("SYS_USER");
+                if (currentUser.isPresent()) {
+                    currentUserRole = currentUser.get().getSysuserrole().intValue();
+                }
+            }
+
+            if (currentUserRole == null || currentUserRole != 1) {
+                responseObj.put("success", false);
+                responseObj.put("message", "只有管理员才能批量审核工作记录");
+                return responseObj;
+            }
+
+            List<WorkRecord> pendingRecords = workRecordRepository.findByDetailPending();
+            if (pendingRecords.isEmpty()) {
+                responseObj.put("success", false);
+                responseObj.put("message", "没有待确认的工作记录");
+                return responseObj;
+            }
+
+            int count = 0;
+            for (WorkRecord record : pendingRecords) {
+                record.setDetail("审核通过");
+                workRecordRepository.save(record);
+                count++;
+            }
+
+            responseObj.put("success", true);
+            responseObj.put("message", "成功审核通过 " + count + " 条工作记录");
+        } catch (Exception e) {
+            responseObj.put("success", false);
+            responseObj.put("message", "批量审核工作记录失败: " + e.getMessage());
+        }
+        return responseObj;
+    }
+
     @GetMapping("/exportWorkRecords")
     public void exportWorkRecords(jakarta.servlet.http.HttpServletRequest httpRequest, jakarta.servlet.http.HttpServletResponse httpResponse) {
         try {

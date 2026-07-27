@@ -47,6 +47,15 @@ Ext.define('AM.view.device.workrecord' ,{
                 },
                 {
                     xtype: 'button',
+                    action: 'approveallworkrecords',
+                    text: '一键审核',
+                    minWidth: 80,
+                    margin: '0 3 0 0',
+                    padding: '3 10',
+                    hidden: SYS_USER ? SYS_USER.sysuserrole !== 1 : true
+                },
+                {
+                    xtype: 'button',
                     action: 'exportworkrecords',
                     text: '导出Excel',
                     minWidth: 80,

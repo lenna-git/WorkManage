@@ -41,6 +41,19 @@ Ext.define('AM.controller.Devices', {
             'viewport > panel > centerpage > workrecord workrecordgrid':{
                 cellclick: this.onWorkRecordCellClick
             },
+            'viewport > panel > centerpage > weeklyreport toolbar button[action=addweeklyreport]':{
+                click: this.onAddWeeklyReportClick
+            },
+            'viewport > panel > centerpage > weeklyreport toolbar button[action=deleteweeklyreport]':{
+                click: this.onDeleteWeeklyReportClick
+            },
+            'viewport > panel > centerpage > weeklyreport toolbar button[action=searchweeklyreports]':{
+                click: this.onWeeklyReportSearchClick
+            },
+            'viewport > panel > centerpage > weeklyreport':{
+                editweeklyreportclick: this.onEditWeeklyReportClick,
+                deleteweeklyreportclick: this.onDeleteWeeklyReportClick
+            },
 
         });
     },
@@ -1807,6 +1820,239 @@ Ext.define('AM.controller.Devices', {
                         Ext.Msg.alert('错误', '删除工作记录失败，请稍后重试');
                     }
                 });
+            }
+        });
+    },
+
+    onAddWeeklyReportClick: function() {
+        Ext.Ajax.request({
+            url: 'weeklyreport/getWeekRange',
+            method: 'GET',
+            success: function(response, opts) {
+                var obj = Ext.decode(response.responseText);
+                var defaultWeekRange = obj.success ? obj.weekRange : '';
+
+                var addWindow = Ext.create('Ext.window.Window', {
+                    title: '新增周报',
+                    width: 450,
+                    modal: true,
+                    layout: 'vbox',
+                    align: 'center',
+                    items: [{
+                        xtype: 'textfield',
+                        fieldLabel: '周',
+                        name: 'weekRange',
+                        width: 400,
+                        labelWidth: 60,
+                        margin: '10 0 10 0',
+                        value: defaultWeekRange,
+                        readOnly: true,
+                        allowBlank: false
+                    }, {
+                        xtype: 'textarea',
+                        fieldLabel: '工作内容',
+                        name: 'workContent',
+                        width: 400,
+                        labelWidth: 60,
+                        margin: '0 0 10 0',
+                        height: 150,
+                        emptyText: '请输入本周工作内容',
+                        allowBlank: false
+                    }],
+                    buttons: [{
+                        text: '取消',
+                        handler: function() {
+                            addWindow.close();
+                        }
+                    }, {
+                        text: '确定',
+                        handler: function() {
+                            var weekRange = addWindow.down('textfield[name=weekRange]').getValue();
+                            var workContent = addWindow.down('textarea[name=workContent]').getValue();
+
+                            if (!weekRange || weekRange.trim() === '') {
+                                Ext.Msg.alert('提示', '请选择周范围');
+                                return;
+                            }
+                            if (!workContent || workContent.trim() === '') {
+                                Ext.Msg.alert('提示', '请输入工作内容');
+                                return;
+                            }
+
+                            Ext.Ajax.request({
+                                url: 'weeklyreport/createWeeklyReport',
+                                method: 'POST',
+                                jsonData: {
+                                    weekRange: weekRange.trim(),
+                                    workContent: workContent.trim()
+                                },
+                                headers: {
+                                    'Content-Type': 'application/json'
+                                },
+                                success: function(response, opts) {
+                                    var obj = Ext.decode(response.responseText);
+                                    if (obj.success) {
+                                        Ext.Msg.alert('成功', obj.message);
+                                        addWindow.close();
+                                        var store = Ext.data.StoreMgr.lookup('weeklyreportstore');
+                                        store.reload();
+                                    } else {
+                                        Ext.Msg.alert('失败', obj.message);
+                                    }
+                                },
+                                failure: function(response, opts) {
+                                    Ext.Msg.alert('错误', '创建周报失败，请稍后重试');
+                                }
+                            });
+                        }
+                    }]
+                });
+                addWindow.show();
+            },
+            failure: function(response, opts) {
+                Ext.Msg.alert('错误', '获取周范围失败，请稍后重试');
+            }
+        });
+    },
+
+    onEditWeeklyReportClick: function(recordId) {
+        var store = Ext.data.StoreMgr.lookup('weeklyreportstore');
+        var record = store.getById(recordId);
+        if (!record) {
+            Ext.Msg.alert('错误', '未找到周报记录');
+            return;
+        }
+
+        var weekRange = record.get('weekRange');
+        var workContent = record.get('workContent');
+
+        var editWindow = Ext.create('Ext.window.Window', {
+            title: '修改周报',
+            width: 450,
+            modal: true,
+            layout: 'vbox',
+            align: 'center',
+            items: [{
+                xtype: 'textfield',
+                fieldLabel: '周',
+                name: 'weekRange',
+                width: 400,
+                labelWidth: 60,
+                margin: '10 0 10 0',
+                value: weekRange || '',
+                readOnly: true,
+                allowBlank: false
+            }, {
+                xtype: 'textarea',
+                fieldLabel: '工作内容',
+                name: 'workContent',
+                width: 400,
+                labelWidth: 60,
+                margin: '0 0 10 0',
+                height: 150,
+                value: workContent || '',
+                allowBlank: false
+            }],
+            buttons: [{
+                text: '取消',
+                handler: function() {
+                    editWindow.close();
+                }
+            }, {
+                text: '确定',
+                handler: function() {
+                    var weekRange = editWindow.down('textfield[name=weekRange]').getValue();
+                    var workContent = editWindow.down('textarea[name=workContent]').getValue();
+
+                    if (!weekRange || weekRange.trim() === '') {
+                        Ext.Msg.alert('提示', '请选择周范围');
+                        return;
+                    }
+                    if (!workContent || workContent.trim() === '') {
+                        Ext.Msg.alert('提示', '请输入工作内容');
+                        return;
+                    }
+
+                    Ext.Ajax.request({
+                        url: 'weeklyreport/updateWeeklyReport',
+                        method: 'PUT',
+                        jsonData: {
+                            id: recordId,
+                            weekRange: weekRange.trim(),
+                            workContent: workContent.trim()
+                        },
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        success: function(response, opts) {
+                            var obj = Ext.decode(response.responseText);
+                            if (obj.success) {
+                                Ext.Msg.alert('成功', obj.message);
+                                editWindow.close();
+                                var store = Ext.data.StoreMgr.lookup('weeklyreportstore');
+                                store.reload();
+                            } else {
+                                Ext.Msg.alert('失败', obj.message);
+                            }
+                        },
+                        failure: function(response, opts) {
+                            Ext.Msg.alert('错误', '修改周报失败，请稍后重试');
+                        }
+                    });
+                }
+            }]
+        });
+        editWindow.show();
+    },
+
+    onDeleteWeeklyReportClick: function(recordId) {
+        var targetRecordId = recordId;
+
+        if (!targetRecordId) {
+            var grid = Ext.ComponentQuery.query('viewport > panel > centerpage > weeklyreport gridpanel')[0];
+            var selection = grid.getSelectionModel().getSelection();
+            if (selection.length > 0) {
+                var record = selection[0];
+                targetRecordId = record.get('id');
+            }
+        }
+
+        if (!targetRecordId) {
+            Ext.Msg.alert('提示', '请先选择要删除的周报');
+            return;
+        }
+
+        Ext.Msg.confirm('确认删除', '确定要删除这条周报吗？', function(btn) {
+            if (btn === 'yes') {
+                Ext.Ajax.request({
+                    url: 'weeklyreport/deleteWeeklyReport/' + targetRecordId,
+                    method: 'DELETE',
+                    success: function(response, opts) {
+                        var obj = Ext.decode(response.responseText);
+                        if (obj.success) {
+                            Ext.Msg.alert('成功', obj.message);
+                            var store = Ext.data.StoreMgr.lookup('weeklyreportstore');
+                            store.reload();
+                        } else {
+                            Ext.Msg.alert('失败', obj.message);
+                        }
+                    },
+                    failure: function(response, opts) {
+                        Ext.Msg.alert('错误', '删除周报失败，请稍后重试');
+                    }
+                });
+            }
+        });
+    },
+
+    onWeeklyReportSearchClick: function() {
+        var toolbar = Ext.ComponentQuery.query('viewport > panel > centerpage > weeklyreport toolbar')[0];
+        var searchField = toolbar.down('textfield[name=searchField]');
+        var keyword = searchField ? searchField.getValue() : '';
+        var store = Ext.data.StoreMgr.lookup('weeklyreportstore');
+        store.load({
+            params: {
+                keyword: keyword
             }
         });
     },

@@ -12,6 +12,7 @@ Ext.define('AM.view.Center',{
         'AM.view.user.userlist',
         'AM.view.device.devicelist',
         'AM.view.device.workrecord',
+        'AM.view.device.weeklyreport',
         'AM.view.user.DeviceRecordView',
         'AM.view.user.DeviceTransferRecordView',
         'AM.view.user.ChangePasswordView',
@@ -22,6 +23,11 @@ Ext.define('AM.view.Center',{
             xtype:'workrecord',
             id:'main-workrecord',
             title: '工作记录',
+        },
+        {
+            xtype:'weeklyreport',
+            id:'main-weeklyreport',
+            title: '周报',
         },
         {
             xtype:'devicelist',

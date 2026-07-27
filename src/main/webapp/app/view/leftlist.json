@@ -14,6 +14,11 @@
                     "text": "<font size=4>工作记录</font>",
                     "id": "main-workrecord",
                     "leaf": true
+                },
+                {
+                    "text": "<font size=4>周报</font>",
+                    "id": "main-weeklyreport",
+                    "leaf": true
                 }
             ]
         },

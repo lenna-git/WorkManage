@@ -1701,10 +1701,26 @@ Ext.define('AM.controller.Devices', {
     },
 
     onDeleteWorkRecordClick: function(recordId) {
+        var targetRecordId = recordId;
+        
+        if (!targetRecordId) {
+            var grid = Ext.ComponentQuery.query('viewport > panel > centerpage > workrecord workrecordgrid')[0];
+            if (!grid) return;
+
+            var selection = grid.getSelectionModel().getSelection();
+            if (selection.length === 0) {
+                Ext.Msg.alert('提示', '请先选择要删除的记录');
+                return;
+            }
+
+            var record = selection[0];
+            targetRecordId = record.get('id');
+        }
+
         Ext.Msg.confirm('确认删除', '确定要删除这条工作记录吗？', function(btn) {
             if (btn === 'yes') {
                 Ext.Ajax.request({
-                    url: 'workrecord/deleteWorkRecord/' + recordId,
+                    url: 'workrecord/deleteWorkRecord/' + targetRecordId,
                     method: 'DELETE',
                     success: function(response, opts) {
                         var obj = Ext.decode(response.responseText);

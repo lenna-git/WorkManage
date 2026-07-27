@@ -44,6 +44,7 @@ public class LoginFilter implements Filter {
                 "/sysuseraction/forgotPassword*",
                 "/sysuseraction/resetPassword*",
                 "/sysuseraction/register*",
+                "/weeklyreport/*",
         };
 
         //3、判断本次请求是否需要处理

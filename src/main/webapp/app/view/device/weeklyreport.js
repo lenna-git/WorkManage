@@ -59,7 +59,7 @@ Ext.define('AM.view.device.weeklyreport',{
         {
             xtype:'gridpanel',
             flex:1,
-            store:Ext.create('AM.store.weeklyreportstore'),
+            store:'weeklyreportstore',
             alias:'widget.weeklyreportgrid',
             columns:[
                 {
@@ -114,7 +114,7 @@ Ext.define('AM.view.device.weeklyreport',{
             ],
             bbar:{
                 xtype:'pagingtoolbar',
-                store:Ext.create('AM.store.weeklyreportstore'),
+                store:'weeklyreportstore',
                 displayInfo:true,
                 displayMsg:'显示 {0} - {1} 条，共 {2} 条',
                 emptyMsg:'没有数据'

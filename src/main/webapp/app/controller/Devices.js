@@ -1551,42 +1551,6 @@ Ext.define('AM.controller.Devices', {
         store.loadPage(1);
     },
 
-    onDeleteWorkRecordClick: function() {
-        var grid = Ext.ComponentQuery.query('viewport > panel > centerpage > workrecord workrecordgrid')[0];
-        if (!grid) return;
-
-        var selection = grid.getSelectionModel().getSelection();
-        if (selection.length === 0) {
-            Ext.Msg.alert('提示', '请先选择要删除的记录');
-            return;
-        }
-
-        var record = selection[0];
-        var recordId = record.get('id');
-
-        Ext.Msg.confirm('确认删除', '确定要删除选中的工作记录吗？', function(btn) {
-            if (btn === 'yes') {
-                Ext.Ajax.request({
-                    url: 'workrecord/deleteWorkRecord/' + recordId,
-                    method: 'DELETE',
-                    success: function(response, opts) {
-                        var obj = Ext.decode(response.responseText);
-                        if (obj.success) {
-                            Ext.Msg.alert('成功', obj.message);
-                            var store = Ext.data.StoreMgr.lookup('workrecordstore');
-                            store.reload();
-                        } else {
-                            Ext.Msg.alert('失败', obj.message);
-                        }
-                    },
-                    failure: function(response, opts) {
-                        Ext.Msg.alert('错误', '删除工作记录失败，请稍后重试');
-                    }
-                });
-            }
-        });
-    },
-
     onWorkRecordCellClick: function(view, cell, colIdx, record, row, rowIdx, e) {
         var target = e.getTarget('.approve-workrecord-link');
         if (target) {
@@ -1617,7 +1581,147 @@ Ext.define('AM.controller.Devices', {
                     });
                 }
             });
+            return;
         }
+
+        var editTarget = e.getTarget('.edit-workrecord-link');
+        if (editTarget) {
+            e.stopEvent();
+            var recordId = editTarget.getAttribute('data-id');
+            this.onEditWorkRecordClick(recordId, record);
+            return;
+        }
+
+        var deleteTarget = e.getTarget('.delete-workrecord-link');
+        if (deleteTarget) {
+            e.stopEvent();
+            var recordId = deleteTarget.getAttribute('data-id');
+            this.onDeleteWorkRecordClick(recordId);
+            return;
+        }
+    },
+
+    onEditWorkRecordClick: function(recordId, record) {
+        var workTime = record.get('workTime');
+        var workLocation = record.get('workLocation');
+        var workContent = record.get('workContent');
+
+        var editWindow = Ext.create('Ext.window.Window', {
+            title: '修改工作记录',
+            width: 400,
+            modal: true,
+            layout: 'vbox',
+            align: 'center',
+            items: [{
+                xtype: 'textfield',
+                fieldLabel: '工作时间',
+                name: 'workTime',
+                width: 350,
+                labelWidth: 80,
+                margin: '10 0 10 0',
+                value: workTime || '',
+                allowBlank: false
+            }, {
+                xtype: 'textfield',
+                fieldLabel: '工作地点',
+                name: 'workLocation',
+                width: 350,
+                labelWidth: 80,
+                margin: '0 0 10 0',
+                value: workLocation || '',
+                allowBlank: false
+            }, {
+                xtype: 'textfield',
+                fieldLabel: '工作内容',
+                name: 'workContent',
+                width: 350,
+                labelWidth: 80,
+                margin: '0 0 10 0',
+                value: workContent || '',
+                allowBlank: false
+            }],
+            buttons: [{
+                text: '取消',
+                handler: function() {
+                    editWindow.close();
+                }
+            }, {
+                text: '确定',
+                handler: function() {
+                    var workTime = editWindow.down('textfield[name=workTime]').getValue();
+                    var workLocation = editWindow.down('textfield[name=workLocation]').getValue();
+                    var workContent = editWindow.down('textfield[name=workContent]').getValue();
+
+                    if (!workTime || workTime.trim() === '') {
+                        Ext.Msg.alert('提示', '请输入工作时间');
+                        return;
+                    }
+                    if (!workLocation || workLocation.trim() === '') {
+                        Ext.Msg.alert('提示', '请输入工作地点');
+                        return;
+                    }
+                    if (!workContent || workContent.trim() === '') {
+                        Ext.Msg.alert('提示', '请输入工作内容');
+                        return;
+                    }
+
+                    Ext.Ajax.request({
+                        url: 'workrecord/updateWorkRecord',
+                        method: 'PUT',
+                        jsonData: {
+                            id: recordId,
+                            workTime: workTime.trim(),
+                            workLocation: workLocation.trim(),
+                            workContent: workContent.trim()
+                        },
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        success: function(response, opts) {
+                            var obj = Ext.decode(response.responseText);
+                            if (obj.success) {
+                                Ext.Msg.alert('成功', obj.message);
+                                var store = Ext.data.StoreMgr.lookup('workrecordstore');
+                                store.reload();
+                            } else {
+                                Ext.Msg.alert('失败', obj.message);
+                            }
+                        },
+                        failure: function(response, opts) {
+                            Ext.Msg.alert('错误', '修改工作记录失败，请稍后重试');
+                        }
+                    });
+
+                    editWindow.close();
+                }
+            }]
+        });
+
+        editWindow.show();
+    },
+
+    onDeleteWorkRecordClick: function(recordId) {
+        Ext.Msg.confirm('确认删除', '确定要删除这条工作记录吗？', function(btn) {
+            if (btn === 'yes') {
+                Ext.Ajax.request({
+                    url: 'workrecord/deleteWorkRecord/' + recordId,
+                    method: 'DELETE',
+                    success: function(response, opts) {
+                        var obj = Ext.decode(response.responseText);
+                        if (obj.success) {
+                            Ext.Msg.alert('成功', obj.message);
+                            var store = Ext.data.StoreMgr.lookup('workrecordstore');
+                            store.reload();
+                        } else {
+                            Ext.Msg.alert('失败', obj.message);
+                        }
+                    },
+                    failure: function(response, opts) {
+                        Ext.Msg.alert('错误', '删除工作记录失败，请稍后重试');
+                    }
+                });
+            }
+        });
     },
 
 });

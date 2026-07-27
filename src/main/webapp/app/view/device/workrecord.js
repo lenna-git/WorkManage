@@ -103,6 +103,30 @@ Ext.define('AM.view.device.workrecordgrid',{
             }
             return detail;
         }
+    },{
+        text:'操作',
+        align:'center',
+        flex:1,
+        renderer: function(value, metaData, record) {
+            var role = SYS_USER ? SYS_USER.sysuserrole : null;
+            var detail = record.get('detail') || '待确认';
+            var recordId = record.get('id');
+            var actions = [];
+
+            if (detail === '待确认') {
+                if (role === 2) {
+                    actions.push('<a href="#" class="edit-workrecord-link" data-id="' + recordId + '" style="color: blue; text-decoration: underline; margin-right: 10px;">修改</a>');
+                    actions.push('<a href="#" class="delete-workrecord-link" data-id="' + recordId + '" style="color: red; text-decoration: underline;">删除</a>');
+                }
+            } else if (detail === '审核通过') {
+                if (role === 1) {
+                    actions.push('<a href="#" class="edit-workrecord-link" data-id="' + recordId + '" style="color: blue; text-decoration: underline; margin-right: 10px;">修改</a>');
+                    actions.push('<a href="#" class="delete-workrecord-link" data-id="' + recordId + '" style="color: red; text-decoration: underline;">删除</a>');
+                }
+            }
+
+            return actions.join('');
+        }
     }],
     bbar: {
         xtype: 'pagingtoolbar',

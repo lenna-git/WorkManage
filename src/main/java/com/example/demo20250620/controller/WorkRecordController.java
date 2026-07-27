@@ -105,9 +105,20 @@ public class WorkRecordController {
     }
 
     @PutMapping("/updateWorkRecord")
-    public Map<String, Object> updateWorkRecord(@RequestBody WorkRecord workRecord) {
+    public Map<String, Object> updateWorkRecord(@RequestBody WorkRecord workRecord, jakarta.servlet.http.HttpServletRequest httpRequest) {
         Map<String, Object> responseObj = new HashMap<>();
         try {
+            jakarta.servlet.http.HttpSession session = httpRequest.getSession(false);
+            Long currentUserId = null;
+            Integer currentUserRole = null;
+            if (session != null) {
+                Optional<SysUser> currentUser = (Optional<SysUser>) session.getAttribute("SYS_USER");
+                if (currentUser.isPresent()) {
+                    currentUserId = currentUser.get().getId();
+                    currentUserRole = currentUser.get().getSysuserrole().intValue();
+                }
+            }
+
             if (workRecord.getId() == null) {
                 responseObj.put("success", false);
                 responseObj.put("message", "记录ID不能为空");
@@ -122,10 +133,30 @@ public class WorkRecordController {
             }
 
             WorkRecord existing = existingOpt.get();
+            String detail = existing.getDetail();
+
+            if ("待确认".equals(detail)) {
+                if (currentUserRole == null || currentUserRole != 2) {
+                    responseObj.put("success", false);
+                    responseObj.put("message", "待确认的记录只有普通用户可以修改");
+                    return responseObj;
+                }
+                if (currentUserId == null || !currentUserId.equals(existing.getUser().getId())) {
+                    responseObj.put("success", false);
+                    responseObj.put("message", "只能修改自己的记录");
+                    return responseObj;
+                }
+            } else if ("审核通过".equals(detail)) {
+                if (currentUserRole == null || currentUserRole != 1) {
+                    responseObj.put("success", false);
+                    responseObj.put("message", "审核通过的记录只有管理员可以修改");
+                    return responseObj;
+                }
+            }
+
             existing.setWorkTime(workRecord.getWorkTime());
             existing.setWorkLocation(workRecord.getWorkLocation());
             existing.setWorkContent(workRecord.getWorkContent());
-            existing.setDetail(workRecord.getDetail());
 
             workRecordRepository.save(existing);
             responseObj.put("success", true);
@@ -177,13 +208,47 @@ public class WorkRecordController {
     }
 
     @DeleteMapping("/deleteWorkRecord/{id}")
-    public Map<String, Object> deleteWorkRecord(@PathVariable Long id) {
+    public Map<String, Object> deleteWorkRecord(@PathVariable Long id, jakarta.servlet.http.HttpServletRequest httpRequest) {
         Map<String, Object> responseObj = new HashMap<>();
         try {
-            if (!workRecordRepository.existsById(id)) {
+            jakarta.servlet.http.HttpSession session = httpRequest.getSession(false);
+            Long currentUserId = null;
+            Integer currentUserRole = null;
+            if (session != null) {
+                Optional<SysUser> currentUser = (Optional<SysUser>) session.getAttribute("SYS_USER");
+                if (currentUser.isPresent()) {
+                    currentUserId = currentUser.get().getId();
+                    currentUserRole = currentUser.get().getSysuserrole().intValue();
+                }
+            }
+
+            Optional<WorkRecord> existingOpt = workRecordRepository.findById(id);
+            if (!existingOpt.isPresent()) {
                 responseObj.put("success", false);
                 responseObj.put("message", "记录不存在");
                 return responseObj;
+            }
+
+            WorkRecord existing = existingOpt.get();
+            String detail = existing.getDetail();
+
+            if ("待确认".equals(detail)) {
+                if (currentUserRole == null || currentUserRole != 2) {
+                    responseObj.put("success", false);
+                    responseObj.put("message", "待确认的记录只有普通用户可以删除");
+                    return responseObj;
+                }
+                if (currentUserId == null || !currentUserId.equals(existing.getUser().getId())) {
+                    responseObj.put("success", false);
+                    responseObj.put("message", "只能删除自己的记录");
+                    return responseObj;
+                }
+            } else if ("审核通过".equals(detail)) {
+                if (currentUserRole == null || currentUserRole != 1) {
+                    responseObj.put("success", false);
+                    responseObj.put("message", "审核通过的记录只有管理员可以删除");
+                    return responseObj;
+                }
             }
 
             workRecordRepository.deleteById(id);

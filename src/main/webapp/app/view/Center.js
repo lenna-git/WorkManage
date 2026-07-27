@@ -11,17 +11,22 @@ Ext.define('AM.view.Center',{
     requires:[
         'AM.view.user.userlist',
         'AM.view.device.devicelist',
+        'AM.view.device.workrecord',
         'AM.view.user.DeviceRecordView',
         'AM.view.user.DeviceTransferRecordView',
         'AM.view.user.ChangePasswordView',
         'AM.view.user.LogOperationView',
-        //右側有哪些頁面，都要放在這裏
     ],
     items:[
         {
             xtype:'devicelist',
             id:'main-device',
             title: 'card1:devices',
+        },
+        {
+            xtype:'workrecord',
+            id:'main-workrecord',
+            title: '工作记录',
         },
         {
             width:'100%',

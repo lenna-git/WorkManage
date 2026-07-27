@@ -9,6 +9,11 @@
                     "text": "<font size=4>设备信息</font>",
                     "id": "main-device",
                     "leaf": true
+                },
+                {
+                    "text": "<font size=4>工作记录</font>",
+                    "id": "main-workrecord",
+                    "leaf": true
                 }
             ]
         },

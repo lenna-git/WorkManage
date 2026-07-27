@@ -23,6 +23,15 @@ Ext.define('AM.controller.Devices', {
             'viewport > panel > centerpage > devicelist toolbar button[action=devicesearch]':{
                 click: this.ondevcxbuttonclick
             },
+            'viewport > panel > centerpage > workrecord toolbar button[action=addworkrecord]':{
+                click: this.onAddWorkRecordClick
+            },
+            'viewport > panel > centerpage > workrecord toolbar button[action=workrecordsearch]':{
+                click: this.onWorkRecordSearchClick
+            },
+            'viewport > panel > centerpage > workrecord toolbar button[action=deleteworkrecord]':{
+                click: this.onDeleteWorkRecordClick
+            },
 
         });
     },
@@ -1429,6 +1438,150 @@ Ext.define('AM.controller.Devices', {
             }, this);
             return;
         }
+    },
+
+    onAddWorkRecordClick: function() {
+        var addWindow = Ext.create('Ext.window.Window', {
+            title: '新增工作记录',
+            width: 400,
+            modal: true,
+            layout: 'vbox',
+            align: 'center',
+            items: [{
+                xtype: 'textfield',
+                fieldLabel: '工作时间',
+                name: 'workTime',
+                width: 350,
+                labelWidth: 80,
+                margin: '10 0 10 0',
+                emptyText: '请输入工作时间，如：2026-07-27 09:00:00',
+                allowBlank: false
+            }, {
+                xtype: 'textfield',
+                fieldLabel: '工作地点',
+                name: 'workLocation',
+                width: 350,
+                labelWidth: 80,
+                margin: '0 0 10 0',
+                emptyText: '请输入工作地点',
+                allowBlank: false
+            }, {
+                xtype: 'textfield',
+                fieldLabel: '工作内容',
+                name: 'workContent',
+                width: 350,
+                labelWidth: 80,
+                margin: '0 0 10 0',
+                emptyText: '请输入工作内容',
+                allowBlank: false
+            }],
+            buttons: [{
+                text: '取消',
+                handler: function() {
+                    addWindow.close();
+                }
+            }, {
+                text: '确定',
+                handler: function() {
+                    var workTime = addWindow.down('textfield[name=workTime]').getValue();
+                    var workLocation = addWindow.down('textfield[name=workLocation]').getValue();
+                    var workContent = addWindow.down('textfield[name=workContent]').getValue();
+
+                    if (!workTime || workTime.trim() === '') {
+                        Ext.Msg.alert('提示', '请输入工作时间');
+                        return;
+                    }
+                    if (!workLocation || workLocation.trim() === '') {
+                        Ext.Msg.alert('提示', '请输入工作地点');
+                        return;
+                    }
+                    if (!workContent || workContent.trim() === '') {
+                        Ext.Msg.alert('提示', '请输入工作内容');
+                        return;
+                    }
+
+                    Ext.Ajax.request({
+                        url: 'workrecord/createWorkRecord',
+                        method: 'POST',
+                        jsonData: {
+                            workTime: workTime.trim(),
+                            workLocation: workLocation.trim(),
+                            workContent: workContent.trim(),
+                            detail: ''
+                        },
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        success: function(response, opts) {
+                            var obj = Ext.decode(response.responseText);
+                            if (obj.success) {
+                                Ext.Msg.alert('成功', obj.message);
+                                var store = Ext.data.StoreMgr.lookup('workrecordstore');
+                                store.reload();
+                            } else {
+                                Ext.Msg.alert('失败', obj.message);
+                            }
+                        },
+                        failure: function(response, opts) {
+                            Ext.Msg.alert('错误', '创建工作记录失败，请稍后重试');
+                        }
+                    });
+
+                    addWindow.close();
+                }
+            }]
+        });
+
+        addWindow.show();
+    },
+
+    onWorkRecordSearchClick: function() {
+        var toolbar = Ext.ComponentQuery.query('viewport > panel > centerpage > workrecord toolbar')[0];
+        var keyword = toolbar.down('textfield[name=queryKeyword]').getValue();
+
+        var store = Ext.data.StoreMgr.lookup('workrecordstore');
+        var proxy = store.getProxy();
+        proxy.extraParams = {};
+        if (keyword && keyword.trim() !== '') {
+            proxy.extraParams.keyword = keyword.trim();
+        }
+        store.loadPage(1);
+    },
+
+    onDeleteWorkRecordClick: function() {
+        var grid = Ext.ComponentQuery.query('viewport > panel > centerpage > workrecord workrecordgrid')[0];
+        if (!grid) return;
+
+        var selection = grid.getSelectionModel().getSelection();
+        if (selection.length === 0) {
+            Ext.Msg.alert('提示', '请先选择要删除的记录');
+            return;
+        }
+
+        var record = selection[0];
+        var recordId = record.get('id');
+
+        Ext.Msg.confirm('确认删除', '确定要删除选中的工作记录吗？', function(btn) {
+            if (btn === 'yes') {
+                Ext.Ajax.request({
+                    url: 'workrecord/deleteWorkRecord/' + recordId,
+                    method: 'DELETE',
+                    success: function(response, opts) {
+                        var obj = Ext.decode(response.responseText);
+                        if (obj.success) {
+                            Ext.Msg.alert('成功', obj.message);
+                            var store = Ext.data.StoreMgr.lookup('workrecordstore');
+                            store.reload();
+                        } else {
+                            Ext.Msg.alert('失败', obj.message);
+                        }
+                    },
+                    failure: function(response, opts) {
+                        Ext.Msg.alert('错误', '删除工作记录失败，请稍后重试');
+                    }
+                });
+            }
+        });
     },
 
 });

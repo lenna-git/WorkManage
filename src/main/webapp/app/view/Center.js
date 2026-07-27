@@ -33,14 +33,14 @@ Ext.define('AM.view.Center',{
             xtype:'ChangePasswordView',
             id:'main-ChangePassword',
             title: '修改密码',
-        },{
-            xtype:'DeviceRecordView',
-            id:'main-DeviceRecord',
-            title: '借用记录:',
-        },{
-            xtype:'DeviceTransferRecordView',
-            id:'main-DeviceTransferRecord',
-            title: '转借记录:',
+        // },{
+        //     xtype:'DeviceRecordView',
+        //     id:'main-DeviceRecord',
+        //     title: '借用记录:',
+        // },{
+        //     xtype:'DeviceTransferRecordView',
+        //     id:'main-DeviceTransferRecord',
+        //     title: '转借记录:',
         },{
             xtype:'LogOperationView',
             id:'main-LogOperation',

@@ -21,16 +21,16 @@
                     "id": "main-user",
                     "leaf": true
                 },
-                {
-                    "text": "<font size=4>借用记录</font>",
-                    "id": "main-DeviceRecord",
-                    "leaf": true
-                },
-                {
-                    "text": "<font size=4>转借记录</font>",
-                    "id": "main-DeviceTransferRecord",
-                    "leaf": true
-                },
+//                {
+//                    "text": "<font size=4>借用记录</font>",
+//                    "id": "main-DeviceRecord",
+//                    "leaf": true
+//                },
+//                {
+//                    "text": "<font size=4>转借记录</font>",
+//                    "id": "main-DeviceTransferRecord",
+//                    "leaf": true
+//                },
                 {
                     "text": "<font size=4>修改密码</font>",
                     "id": "main-ChangePassword",

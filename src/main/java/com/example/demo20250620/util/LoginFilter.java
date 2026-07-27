@@ -3,6 +3,7 @@ package com.example.demo20250620.util;
 import com.example.demo20250620.entity.SysUser;
 import jakarta.servlet.*;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -40,6 +41,9 @@ public class LoginFilter implements Filter {
                 "/login*",
                 "/useraction/demo",
                 "/sysuseraction/logout*",
+                "/sysuseraction/forgotPassword*",
+                "/sysuseraction/resetPassword*",
+                "/sysuseraction/register*",
         };
 
         //3、判断本次请求是否需要处理
@@ -64,6 +68,10 @@ public class LoginFilter implements Filter {
             return;
         }else {
             logger.info("用户未登陆,拦截请求");
+            HttpServletResponse response = (HttpServletResponse) servletResponse;
+            response.setContentType("application/json;charset=UTF-8");
+            response.setStatus(401);
+            response.getWriter().write("{\"success\":false,\"message\":\"请先登录\"}");
             return;
         }
         //5、如果未登录则返回未登录结果，通过输出流方式向客户端页面响应数据

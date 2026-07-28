@@ -2,13 +2,12 @@ Ext.define('AM.view.device.weeklyreport',{
     extend:'Ext.panel.Panel',
     alias:'widget.weeklyreport',
     layout:{
-        type:'vbox',
-        align:'stretch'
+        type:'border'
     },
-    weeklyReportStore:null,
     items:[
         {
             xtype:'toolbar',
+            region:'north',
             items:[
                 {
                     xtype:'textfield',
@@ -18,7 +17,7 @@ Ext.define('AM.view.device.weeklyreport',{
                     listeners:{
                         specialkey:function(field,e){
                             if(e.getKey() == e.ENTER){
-                                var grid = Ext.ComponentQuery.query('viewport > panel > centerpage > weeklyreport gridpanel')[0];
+                                var grid = Ext.ComponentQuery.query('viewport > panel > centerpage > weeklyreport weeklyreportgrid')[0];
                                 if (grid) {
                                     var store = grid.getStore();
                                     store.load({
@@ -61,86 +60,76 @@ Ext.define('AM.view.device.weeklyreport',{
             ]
         },
         {
-            xtype:'gridpanel',
-            flex:1,
-            itemId:'weeklyreportgrid',
-            columns:[
-                {
-                    text:'序号',
-                    xtype:'rownumberer',
-                    width:60,
-                    align:'center'
-                },
-                {
-                    text:'周',
-                    align:'center',
-                    dataIndex:'weekRange',
-                    flex:2
-                },
-                {
-                    text:'工作内容',
-                    align:'center',
-                    dataIndex:'workContent',
-                    flex:4,
-                    renderer:function(value){
-                        if(value && value.length > 50){
-                            return value.substring(0,50) + '...';
-                        }
-                        return value || '';
-                    }
-                },
-                {
-                    text:'用户',
-                    align:'center',
-                    dataIndex:'username',
-                    flex:1
-                },
-                {
-                    text:'操作',
-                    align:'center',
-                    flex:2,
-                    renderer:function(value,metaData,record){
-                        var detail = record.get('detail');
-                        var role = SYS_USER ? SYS_USER.sysuserrole : 0;
-                        var actions = [];
-                        
-                        if(role === 1){
-                            actions.push('<a href="#" style="color:blue;margin-right:10px;" onclick="Ext.ComponentQuery.query(\'viewport > panel > centerpage > weeklyreport\')[0].fireEvent(\'editweeklyreportclick\',' + record.get('id') + ')">修改</a>');
-                            actions.push('<a href="#" style="color:red;" onclick="Ext.ComponentQuery.query(\'viewport > panel > centerpage > weeklyreport\')[0].fireEvent(\'deleteweeklyreportclick\',' + record.get('id') + ')">删除</a>');
-                        } else {
-                            actions.push('<a href="#" style="color:blue;margin-right:10px;" onclick="Ext.ComponentQuery.query(\'viewport > panel > centerpage > weeklyreport\')[0].fireEvent(\'editweeklyreportclick\',' + record.get('id') + ')">修改</a>');
-                            actions.push('<a href="#" style="color:red;" onclick="Ext.ComponentQuery.query(\'viewport > panel > centerpage > weeklyreport\')[0].fireEvent(\'deleteweeklyreportclick\',' + record.get('id') + ')">删除</a>');
-                        }
-                        return actions.join('');
-                    }
+            xtype:'weeklyreportgrid',
+            region:'center'
+        }
+    ]
+});
+
+Ext.define('AM.view.device.weeklyreportgrid',{
+    extend:'Ext.grid.Panel',
+    alias:'widget.weeklyreportgrid',
+    store:'weeklyreportstore',
+    autoScroll:true,
+    forceFit:true,
+    viewConfig:{
+        loadMask:true
+    },
+    columns:[
+        {
+            text:'序号',
+            align:'center',
+            width:60,
+            renderer:function(value, metaData, record, rowIndex){
+                return rowIndex + 1;
+            }
+        },
+        {
+            text:'周',
+            align:'center',
+            dataIndex:'weekRange',
+            flex:2
+        },
+        {
+            text:'工作内容',
+            align:'center',
+            dataIndex:'workContent',
+            flex:4,
+            renderer:function(value){
+                if(value && value.length > 50){
+                    return value.substring(0,50) + '...';
                 }
-            ],
-            bbar:{
-                xtype:'pagingtoolbar',
-                displayInfo:true,
-                displayMsg:'显示 {0} - {1} 条，共 {2} 条',
-                emptyMsg:'没有数据'
+                return value || '';
+            }
+        },
+        {
+            text:'用户',
+            align:'center',
+            dataIndex:'username',
+            flex:1
+        },
+        {
+            text:'操作',
+            align:'center',
+            width:120,
+            renderer:function(value,metaData,record){
+                var actions = [];
+                actions.push('<a href="#" style="color:blue;margin-right:10px;" onclick="Ext.ComponentQuery.query(\'viewport > panel > centerpage > weeklyreport\')[0].fireEvent(\'editweeklyreportclick\',' + record.get('id') + ')">修改</a>');
+                actions.push('<a href="#" style="color:red;" onclick="Ext.ComponentQuery.query(\'viewport > panel > centerpage > weeklyreport\')[0].fireEvent(\'deleteweeklyreportclick\',' + record.get('id') + ')">删除</a>');
+                return actions.join('');
             }
         }
     ],
     initComponent:function(){
-        this.weeklyReportStore = Ext.create('AM.store.weeklyreportstore');
-        
-        this.callParent(arguments);
+        this.dockedItems = [{
+            xtype:'pagingtoolbar',
+            store:'weeklyreportstore',
+            dock:'bottom',
+            displayInfo:true,
+            displayMsg:'显示 {0} - {1} 条，共 {2} 条',
+            emptyMsg:'没有数据'
+        }];
         this.addEvents('editweeklyreportclick','deleteweeklyreportclick');
-        
-        var grid = this.down('#weeklyreportgrid');
-        if (grid) {
-            grid.setStore(this.weeklyReportStore);
-        }
-        
-        var pagingtoolbar = this.down('pagingtoolbar');
-        if (pagingtoolbar) {
-            pagingtoolbar.setStore(this.weeklyReportStore);
-        }
-        
-        this.on('render', function() {
-            this.weeklyReportStore.load();
-        });
+        this.callParent(arguments);
     }
 })

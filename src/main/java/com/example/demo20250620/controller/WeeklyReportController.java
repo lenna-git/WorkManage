@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -56,9 +57,25 @@ public class WeeklyReportController {
                 }
             }
 
+            List<Map<String, Object>> dataList = new ArrayList<>();
+            for (WeeklyReport report : weeklyReportPage.getContent()) {
+                Map<String, Object> item = new HashMap<>();
+                item.put("id", report.getId());
+                item.put("weekRange", report.getWeekRange());
+                item.put("workContent", report.getWorkContent());
+                item.put("createTime", report.getCreateTime() != null ? report.getCreateTime().toString() : "");
+                item.put("updateTime", report.getUpdateTime() != null ? report.getUpdateTime().toString() : "");
+                if (report.getUser() != null) {
+                    item.put("username", report.getUser().getSysusername());
+                } else {
+                    item.put("username", "");
+                }
+                dataList.add(item);
+            }
+
             responseObj.put("success", true);
             responseObj.put("total", weeklyReportPage.getTotalElements());
-            responseObj.put("data", weeklyReportPage.getContent());
+            responseObj.put("data", dataList);
         } catch (Exception e) {
             responseObj.put("success", false);
             responseObj.put("message", "获取周报列表失败: " + e.getMessage());

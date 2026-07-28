@@ -1879,7 +1879,6 @@ Ext.define('AM.controller.Devices', {
                                 return;
                             }
 
-                            var weeklyReportPanel = Ext.ComponentQuery.query('viewport > panel > centerpage > weeklyreport')[0];
                             Ext.Ajax.request({
                                 url: 'weeklyreport/createWeeklyReport',
                                 method: 'POST',
@@ -1895,8 +1894,9 @@ Ext.define('AM.controller.Devices', {
                                     if (obj.success) {
                                         addWindow.close();
                                         Ext.Msg.alert('成功', obj.message, function() {
-                                            if (weeklyReportPanel && weeklyReportPanel.weeklyReportStore) {
-                                                weeklyReportPanel.weeklyReportStore.load();
+                                            var grid = Ext.ComponentQuery.query('viewport > panel > centerpage > weeklyreport weeklyreportgrid')[0];
+                                            if (grid) {
+                                                grid.getStore().load();
                                             }
                                         });
                                     } else {
@@ -1919,10 +1919,10 @@ Ext.define('AM.controller.Devices', {
     },
 
     onEditWeeklyReportClick: function(recordId) {
-        var weeklyReportPanel = Ext.ComponentQuery.query('viewport > panel > centerpage > weeklyreport')[0];
+        var grid = Ext.ComponentQuery.query('viewport > panel > centerpage > weeklyreport weeklyreportgrid')[0];
         var record = null;
-        if (weeklyReportPanel && weeklyReportPanel.weeklyReportStore) {
-            record = weeklyReportPanel.weeklyReportStore.getById(recordId);
+        if (grid) {
+            record = grid.getStore().getById(recordId);
         }
         if (!record) {
             Ext.Msg.alert('错误', '未找到周报记录');
@@ -1995,8 +1995,9 @@ Ext.define('AM.controller.Devices', {
                             if (obj.success) {
                                 editWindow.close();
                                 Ext.Msg.alert('成功', obj.message, function() {
-                                    if (weeklyReportPanel && weeklyReportPanel.weeklyReportStore) {
-                                        weeklyReportPanel.weeklyReportStore.load();
+                                    var grid = Ext.ComponentQuery.query('viewport > panel > centerpage > weeklyreport weeklyreportgrid')[0];
+                                    if (grid) {
+                                        grid.getStore().load();
                                     }
                                 });
                             } else {
@@ -2017,8 +2018,7 @@ Ext.define('AM.controller.Devices', {
         var targetRecordId = recordId;
 
         if (!targetRecordId) {
-            var weeklyReportPanel = Ext.ComponentQuery.query('viewport > panel > centerpage > weeklyreport')[0];
-            var grid = weeklyReportPanel ? weeklyReportPanel.down('#weeklyreportgrid') : null;
+            var grid = Ext.ComponentQuery.query('viewport > panel > centerpage > weeklyreport weeklyreportgrid')[0];
             if (grid) {
                 var selection = grid.getSelectionModel().getSelection();
                 if (selection.length > 0) {
@@ -2042,9 +2042,9 @@ Ext.define('AM.controller.Devices', {
                         var obj = Ext.decode(response.responseText);
                         if (obj.success) {
                             Ext.Msg.alert('成功', obj.message, function() {
-                                var panel = Ext.ComponentQuery.query('viewport > panel > centerpage > weeklyreport')[0];
-                                if (panel && panel.weeklyReportStore) {
-                                    panel.weeklyReportStore.load();
+                                var grid = Ext.ComponentQuery.query('viewport > panel > centerpage > weeklyreport weeklyreportgrid')[0];
+                                if (grid) {
+                                    grid.getStore().load();
                                 }
                             });
                         } else {
@@ -2060,12 +2060,12 @@ Ext.define('AM.controller.Devices', {
     },
 
     onWeeklyReportSearchClick: function() {
-        var weeklyReportPanel = Ext.ComponentQuery.query('viewport > panel > centerpage > weeklyreport')[0];
-        var toolbar = weeklyReportPanel ? weeklyReportPanel.down('toolbar') : null;
+        var grid = Ext.ComponentQuery.query('viewport > panel > centerpage > weeklyreport weeklyreportgrid')[0];
+        var toolbar = Ext.ComponentQuery.query('viewport > panel > centerpage > weeklyreport toolbar')[0];
         var searchField = toolbar ? toolbar.down('textfield[name=searchField]') : null;
         var keyword = searchField ? searchField.getValue() : '';
-        if (weeklyReportPanel && weeklyReportPanel.weeklyReportStore) {
-            weeklyReportPanel.weeklyReportStore.load({
+        if (grid) {
+            grid.getStore().load({
                 params: {
                     keyword: keyword
                 }

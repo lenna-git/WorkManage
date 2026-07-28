@@ -13,7 +13,6 @@ Ext.define('AM.view.Center',{
         'AM.view.device.devicelist',
         'AM.view.device.workrecord',
         'AM.view.device.weeklyreport',
-        'AM.view.device.weeklyreportgrid',
         'AM.view.user.DeviceRecordView',
         'AM.view.user.DeviceTransferRecordView',
         'AM.view.user.ChangePasswordView',

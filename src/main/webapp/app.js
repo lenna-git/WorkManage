@@ -185,15 +185,13 @@ Ext.application({
     stores: [
         'DeviceTransferRecordStore',
         'devicerecordstore',
-        'workrecordstore',
-        'weeklyreportstore'
+        'workrecordstore'
     ],
 
     models: [
         'DeviceTransferRecordModel',
         'devicerecord',
-        'workrecord',
-        'weeklyreport'
+        'workrecord'
     ],
 
     launch: function() {

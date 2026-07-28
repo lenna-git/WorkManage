@@ -149,16 +149,11 @@ Ext.define('AM.view.device.weeklyreportgrid',{
             }
         }
     ],
-    initComponent:function(){
-        this.dockedItems = [{
-            xtype:'pagingtoolbar',
-            store:'weeklyreportstore',
-            dock:'bottom',
-            displayInfo:true,
-            displayMsg:'显示 {0} - {1} 条，共 {2} 条',
-            emptyMsg:'没有数据'
-        }];
-        this.addEvents('editweeklyreportclick','deleteweeklyreportclick');
-        this.callParent(arguments);
+    bbar:{
+        xtype:'pagingtoolbar',
+        store:'weeklyreportstore',
+        displayInfo:true,
+        displayMsg:'显示 {0} - {1} 条，共 {2} 条',
+        emptyMsg:'没有数据'
     }
 })

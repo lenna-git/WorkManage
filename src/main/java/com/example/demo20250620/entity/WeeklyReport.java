@@ -18,7 +18,7 @@ public class WeeklyReport {
     @Column(name = "work_content", length = 2000)
     private String workContent;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "user_id")
     private SysUser user;
 

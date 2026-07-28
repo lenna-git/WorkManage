@@ -5,6 +5,7 @@ Ext.define('AM.view.device.weeklyreport',{
         type:'vbox',
         align:'stretch'
     },
+    weeklyReportStore:null,
     items:[
         {
             xtype:'toolbar',
@@ -17,12 +18,15 @@ Ext.define('AM.view.device.weeklyreport',{
                     listeners:{
                         specialkey:function(field,e){
                             if(e.getKey() == e.ENTER){
-                                var store = Ext.data.StoreMgr.lookup('weeklyreportstore');
-                                store.load({
-                                    params:{
-                                        keyword:field.getValue()
-                                    }
-                                });
+                                var grid = Ext.ComponentQuery.query('viewport > panel > centerpage > weeklyreport gridpanel')[0];
+                                if (grid) {
+                                    var store = grid.getStore();
+                                    store.load({
+                                        params:{
+                                            keyword:field.getValue()
+                                        }
+                                    });
+                                }
                             }
                         }
                     }
@@ -59,8 +63,7 @@ Ext.define('AM.view.device.weeklyreport',{
         {
             xtype:'gridpanel',
             flex:1,
-            store:'weeklyreportstore',
-            alias:'widget.weeklyreportgrid',
+            itemId:'weeklyreportgrid',
             columns:[
                 {
                     text:'序号',
@@ -114,7 +117,6 @@ Ext.define('AM.view.device.weeklyreport',{
             ],
             bbar:{
                 xtype:'pagingtoolbar',
-                store:'weeklyreportstore',
                 displayInfo:true,
                 displayMsg:'显示 {0} - {1} 条，共 {2} 条',
                 emptyMsg:'没有数据'
@@ -122,7 +124,23 @@ Ext.define('AM.view.device.weeklyreport',{
         }
     ],
     initComponent:function(){
+        this.weeklyReportStore = Ext.create('AM.store.weeklyreportstore');
+        
         this.callParent(arguments);
         this.addEvents('editweeklyreportclick','deleteweeklyreportclick');
+        
+        var grid = this.down('#weeklyreportgrid');
+        if (grid) {
+            grid.setStore(this.weeklyReportStore);
+        }
+        
+        var pagingtoolbar = this.down('pagingtoolbar');
+        if (pagingtoolbar) {
+            pagingtoolbar.setStore(this.weeklyReportStore);
+        }
+        
+        this.on('render', function() {
+            this.weeklyReportStore.load();
+        });
     }
 })

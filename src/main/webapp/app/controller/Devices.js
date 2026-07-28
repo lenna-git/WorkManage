@@ -1538,7 +1538,7 @@ Ext.define('AM.controller.Devices', {
                     }
 
                     Ext.Ajax.request({
-                        url: 'workrecord/createWorkRecord',
+                        url: '/workrecord/createWorkRecord',
                         method: 'POST',
                         jsonData: {
                             workDate: Ext.Date.format(workDate, 'Y-m-d'),
@@ -1595,7 +1595,7 @@ Ext.define('AM.controller.Devices', {
             Ext.Msg.confirm('确认审核', '确定要审核通过这条工作记录吗？', function(btn) {
                 if (btn === 'yes') {
                     Ext.Ajax.request({
-                        url: 'workrecord/approveWorkRecord/' + recordId,
+                        url: '/workrecord/approveWorkRecord/' + recordId,
                         method: 'PUT',
                         headers: {
                             'Content-Type': 'application/json'
@@ -1717,7 +1717,7 @@ Ext.define('AM.controller.Devices', {
                     }
 
                     Ext.Ajax.request({
-                        url: 'workrecord/updateWorkRecord',
+                        url: '/workrecord/updateWorkRecord',
                         method: 'PUT',
                         jsonData: {
                             id: recordId,
@@ -1753,7 +1753,7 @@ Ext.define('AM.controller.Devices', {
     },
 
     onExportWorkRecordsClick: function() {
-        var url = 'workrecord/exportWorkRecords';
+        var url = '/workrecord/exportWorkRecords';
         window.location.href = url;
     },
 
@@ -1761,7 +1761,7 @@ Ext.define('AM.controller.Devices', {
         Ext.Msg.confirm('确认审核', '确定要一键审核所有待确认的工作记录吗？', function(btn) {
             if (btn === 'yes') {
                 Ext.Ajax.request({
-                    url: 'workrecord/approveAllWorkRecords',
+                    url: '/workrecord/approveAllWorkRecords',
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json'
@@ -1804,7 +1804,7 @@ Ext.define('AM.controller.Devices', {
         Ext.Msg.confirm('确认删除', '确定要删除这条工作记录吗？', function(btn) {
             if (btn === 'yes') {
                 Ext.Ajax.request({
-                    url: 'workrecord/deleteWorkRecord/' + targetRecordId,
+                    url: '/workrecord/deleteWorkRecord/' + targetRecordId,
                     method: 'DELETE',
                     success: function(response, opts) {
                         var obj = Ext.decode(response.responseText);
@@ -1826,7 +1826,7 @@ Ext.define('AM.controller.Devices', {
 
     onAddWeeklyReportClick: function() {
         Ext.Ajax.request({
-            url: 'weeklyreport/getWeekRange',
+            url: '/weeklyreport/getWeekRange',
             method: 'GET',
             success: function(response, opts) {
                 var obj = Ext.decode(response.responseText);
@@ -1880,7 +1880,7 @@ Ext.define('AM.controller.Devices', {
                             }
 
                             Ext.Ajax.request({
-                                url: 'weeklyreport/createWeeklyReport',
+                                url: '/weeklyreport/createWeeklyReport',
                                 method: 'POST',
                                 jsonData: {
                                     weekRange: weekRange.trim(),
@@ -1980,7 +1980,7 @@ Ext.define('AM.controller.Devices', {
                     }
 
                     Ext.Ajax.request({
-                        url: 'weeklyreport/updateWeeklyReport',
+                        url: '/weeklyreport/updateWeeklyReport',
                         method: 'PUT',
                         jsonData: {
                             id: recordId,
@@ -2036,7 +2036,7 @@ Ext.define('AM.controller.Devices', {
         Ext.Msg.confirm('确认删除', '确定要删除这条周报吗？', function(btn) {
             if (btn === 'yes') {
                 Ext.Ajax.request({
-                    url: 'weeklyreport/deleteWeeklyReport/' + targetRecordId,
+                    url: '/weeklyreport/deleteWeeklyReport/' + targetRecordId,
                     method: 'DELETE',
                     success: function(response, opts) {
                         var obj = Ext.decode(response.responseText);

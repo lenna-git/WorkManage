@@ -8,7 +8,7 @@ Ext.define('AM.store.workrecordstore',{
 
     proxy:{
         type:'ajax',
-        url:'workrecord/allworkrecords',
+        url:'/workrecord/allworkrecords',
         pageParam: 'page',
         limitParam: 'limit',
         startParam: undefined,

@@ -6,7 +6,7 @@ Ext.define('AM.store.weeklyreportstore',{
     pageSize:10,
     proxy:{
         type:'ajax',
-        url:'weeklyreport/allweeklyreports',
+        url:'/weeklyreport/allweeklyreports',
         reader:{
             type:'json',
             rootProperty:'data',

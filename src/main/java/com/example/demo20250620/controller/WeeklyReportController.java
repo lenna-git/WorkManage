@@ -43,22 +43,30 @@ public class WeeklyReportController {
                     currentUserId = currentUser.get().getId();
                 }
             }
+            
+            System.out.println("=== getWeeklyReports Debug ===");
+            System.out.println("currentUserRole: " + currentUserRole);
+            System.out.println("currentUserId: " + currentUserId);
+            System.out.println("page: " + page + ", size: " + size);
 
-            Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "weekRange"));
-            Page<WeeklyReport> weeklyReportPage;
-
+            List<WeeklyReport> reports;
+            
             if (currentUserRole != null && currentUserRole == 1) {
-                weeklyReportPage = weeklyReportRepository.findAllWithUser(pageable);
+                reports = weeklyReportRepository.findAllWithUserList();
+                System.out.println("Admin query found: " + reports.size() + " reports");
+            } else if (currentUserId != null) {
+                reports = weeklyReportRepository.findByUserIdOrderByWeekRangeDesc(currentUserId);
+                System.out.println("User query found: " + reports.size() + " reports");
             } else {
-                if (currentUserId != null) {
-                    weeklyReportPage = weeklyReportRepository.findByUserIdWithUser(currentUserId, pageable);
-                } else {
-                    weeklyReportPage = Page.empty();
-                }
+                reports = new ArrayList<>();
             }
 
+            int start = page * size;
+            int end = Math.min(start + size, reports.size());
+            List<WeeklyReport> pagedReports = reports.subList(Math.min(start, reports.size()), end);
+
             List<Map<String, Object>> dataList = new ArrayList<>();
-            for (WeeklyReport report : weeklyReportPage.getContent()) {
+            for (WeeklyReport report : pagedReports) {
                 Map<String, Object> item = new HashMap<>();
                 item.put("id", report.getId());
                 item.put("weekRange", report.getWeekRange());
@@ -74,9 +82,10 @@ public class WeeklyReportController {
             }
 
             responseObj.put("success", true);
-            responseObj.put("total", weeklyReportPage.getTotalElements());
+            responseObj.put("total", reports.size());
             responseObj.put("data", dataList);
         } catch (Exception e) {
+            e.printStackTrace();
             responseObj.put("success", false);
             responseObj.put("message", "获取周报列表失败: " + e.getMessage());
         }

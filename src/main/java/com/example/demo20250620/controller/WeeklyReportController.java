@@ -61,9 +61,9 @@ public class WeeklyReportController {
                 reports = new ArrayList<>();
             }
 
-            int start = page * size;
+            int start = (page - 1) * size;
             int end = Math.min(start + size, reports.size());
-            List<WeeklyReport> pagedReports = reports.subList(Math.min(start, reports.size()), end);
+            List<WeeklyReport> pagedReports = reports.subList(Math.max(0, Math.min(start, reports.size())), end);
 
             List<Map<String, Object>> dataList = new ArrayList<>();
             for (WeeklyReport report : pagedReports) {

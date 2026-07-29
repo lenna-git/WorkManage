@@ -1,7 +1,6 @@
 Ext.define('AM.store.weeklyreportstore',{
     extend:'Ext.data.Store',
     model:'AM.model.weeklyreport',
-    alias:'store.weeklyreportstore',
     storeId:'weeklyreportstore',
     pageSize:10,
     proxy:{
@@ -9,7 +8,7 @@ Ext.define('AM.store.weeklyreportstore',{
         url:'/weeklyreport/allweeklyreports',
         reader:{
             type:'json',
-            rootProperty:'data',
+            root:'data',
             totalProperty:'total'
         }
     },

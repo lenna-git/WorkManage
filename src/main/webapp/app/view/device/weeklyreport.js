@@ -1,32 +1,3 @@
-Ext.define('AM.model.weeklyreport',{
-    extend:'Ext.data.Model',
-    fields:[
-        {name:'id',type:'int'},
-        {name:'weekRange',type:'string'},
-        {name:'workContent',type:'string'},
-        {name:'username',type:'string'},
-        {name:'createTime',type:'string'},
-        {name:'updateTime',type:'string'}
-    ]
-});
-
-Ext.define('AM.store.weeklyreportstore',{
-    extend:'Ext.data.Store',
-    model:'AM.model.weeklyreport',
-    storeId:'weeklyreportstore',
-    pageSize:10,
-    proxy:{
-        type:'ajax',
-        url:'/weeklyreport/allweeklyreports',
-        reader:{
-            type:'json',
-            root:'data',
-            totalProperty:'total'
-        }
-    },
-    autoLoad:true
-});
-
 Ext.define('AM.view.device.weeklyreport',{
     extend:'Ext.panel.Panel',
     alias:'widget.weeklyreport',

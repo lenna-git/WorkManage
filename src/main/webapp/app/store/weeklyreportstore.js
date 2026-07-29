@@ -3,14 +3,20 @@ Ext.define('AM.store.weeklyreportstore',{
     model:'AM.model.weeklyreport',
     storeId:'weeklyreportstore',
     pageSize:10,
+    remoteSort:false,
+    remoteFilter:false,
     proxy:{
         type:'ajax',
         url:'/weeklyreport/allweeklyreports',
+        pageParam:'page',
+        limitParam:'size',
+        startParam:undefined,
         reader:{
             type:'json',
             root:'data',
             totalProperty:'total'
-        }
+        },
+        simpleSortMode:true
     },
     autoLoad:true
 })

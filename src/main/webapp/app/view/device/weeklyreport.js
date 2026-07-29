@@ -4,6 +4,45 @@ Ext.define('AM.view.device.weeklyreport',{
     layout:{
         type:'border'
     },
+    initComponent:function(){
+        var me = this;
+        this.callParent(arguments);
+        
+        var toolbar = this.down('toolbar');
+        
+        var session = Ext.util.Cookies.get('JSESSIONID');
+        var isAdmin = false;
+        
+        Ext.Ajax.request({
+            url: '/weeklyreport/checkRole',
+            async: false,
+            success: function(response){
+                var result = Ext.JSON.decode(response.responseText);
+                if(result.success && result.role === 1){
+                    isAdmin = true;
+                }
+            }
+        });
+        
+        if(isAdmin){
+            toolbar.add({
+                xtype:'button',
+                action:'approveAllweeklyreports',
+                text:'一键审核',
+                minWidth:80,
+                margin:'0 3 0 0',
+                padding:'3 10'
+            });
+            toolbar.add({
+                xtype:'button',
+                action:'exportweeklyreports',
+                text:'导出Excel',
+                minWidth:80,
+                margin:'0 3 0 0',
+                padding:'3 10'
+            });
+        }
+    },
     items:[
         {
             xtype:'toolbar',
@@ -109,13 +148,34 @@ Ext.define('AM.view.device.weeklyreportgrid',{
             flex:1
         },
         {
+            text:'状态',
+            align:'center',
+            dataIndex:'detail',
+            width:100,
+            renderer:function(value, metaData, record){
+                if(value === '审核通过'){
+                    return '<span style="color:green;font-weight:bold;">' + value + '</span>';
+                } else {
+                    return '<span style="color:orange;">' + (value || '待确认') + '</span>';
+                }
+            }
+        },
+        {
             text:'操作',
             align:'center',
-            width:120,
+            width:200,
             renderer:function(value,metaData,record){
                 var actions = [];
-                actions.push('<a href="#" style="color:blue;margin-right:10px;" onclick="Ext.ComponentQuery.query(\'viewport > panel > centerpage > weeklyreport\')[0].fireEvent(\'editweeklyreportclick\',' + record.get('id') + ')">修改</a>');
-                actions.push('<a href="#" style="color:red;" onclick="Ext.ComponentQuery.query(\'viewport > panel > centerpage > weeklyreport\')[0].fireEvent(\'deleteweeklyreportclick\',' + record.get('id') + ')">删除</a>');
+                var detail = record.get('detail') || '待确认';
+                var id = record.get('id');
+                
+                actions.push('<a href="#" style="color:blue;margin-right:10px;" onclick="Ext.ComponentQuery.query(\'viewport > panel > centerpage > weeklyreport\')[0].fireEvent(\'editweeklyreportclick\',' + id + ')">修改</a>');
+                actions.push('<a href="#" style="color:red;margin-right:10px;" onclick="Ext.ComponentQuery.query(\'viewport > panel > centerpage > weeklyreport\')[0].fireEvent(\'deleteweeklyreportclick\',' + id + ')">删除</a>');
+                
+                if(detail === '待确认'){
+                    actions.push('<a href="#" style="color:green;" onclick="Ext.ComponentQuery.query(\'viewport > panel > centerpage > weeklyreport\')[0].fireEvent(\'approveweeklyreportclick\',' + id + ')">审核</a>');
+                }
+                
                 return actions.join('');
             }
         }
@@ -126,5 +186,16 @@ Ext.define('AM.view.device.weeklyreportgrid',{
         displayInfo:true,
         displayMsg:'显示 {0} - {1} 条，共 {2} 条',
         emptyMsg:'没有数据'
+    },
+    initComponent: function() {
+        var me = this;
+        this.callParent(arguments);
+        
+        this.on('itemdblclick', function(grid, record) {
+            var panel = Ext.ComponentQuery.query('viewport > panel > centerpage > weeklyreport')[0];
+            if(panel){
+                panel.fireEvent('editweeklyreportclick', record.get('id'));
+            }
+        });
     }
 })

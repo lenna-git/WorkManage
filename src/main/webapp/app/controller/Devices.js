@@ -52,7 +52,14 @@ Ext.define('AM.controller.Devices', {
             },
             'viewport > panel > centerpage > weeklyreport':{
                 editweeklyreportclick: this.onEditWeeklyReportClick,
-                deleteweeklyreportclick: this.onDeleteWeeklyReportClick
+                deleteweeklyreportclick: this.onDeleteWeeklyReportClick,
+                approveweeklyreportclick: this.onApproveWeeklyReportClick
+            },
+            'viewport > panel > centerpage > weeklyreport toolbar button[action=approveAllweeklyreports]':{
+                click: this.onApproveAllWeeklyReportsClick
+            },
+            'viewport > panel > centerpage > weeklyreport toolbar button[action=exportweeklyreports]':{
+                click: this.onExportWeeklyReportsClick
             },
 
         });
@@ -2071,6 +2078,69 @@ Ext.define('AM.controller.Devices', {
                 }
             });
         }
+    },
+
+    onApproveWeeklyReportClick: function(recordId) {
+        Ext.Msg.confirm('确认审核', '确定要审核通过这条周报吗？', function(btn) {
+            if (btn === 'yes') {
+                Ext.Ajax.request({
+                    url: '/weeklyreport/approveWeeklyReport/' + recordId,
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    success: function(response, opts) {
+                        var obj = Ext.decode(response.responseText);
+                        if (obj.success) {
+                            Ext.Msg.alert('成功', obj.message);
+                            var grid = Ext.ComponentQuery.query('viewport > panel > centerpage > weeklyreport weeklyreportgrid')[0];
+                            if (grid) {
+                                grid.getStore().load();
+                            }
+                        } else {
+                            Ext.Msg.alert('失败', obj.message);
+                        }
+                    },
+                    failure: function(response, opts) {
+                        Ext.Msg.alert('错误', '审核周报失败，请稍后重试');
+                    }
+                });
+            }
+        });
+    },
+
+    onApproveAllWeeklyReportsClick: function() {
+        Ext.Msg.confirm('确认审核', '确定要一键审核所有待确认的周报吗？', function(btn) {
+            if (btn === 'yes') {
+                Ext.Ajax.request({
+                    url: '/weeklyreport/approveAllWeeklyReports',
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    success: function(response, opts) {
+                        var obj = Ext.decode(response.responseText);
+                        if (obj.success) {
+                            Ext.Msg.alert('成功', obj.message);
+                            var grid = Ext.ComponentQuery.query('viewport > panel > centerpage > weeklyreport weeklyreportgrid')[0];
+                            if (grid) {
+                                grid.getStore().load();
+                            }
+                        } else {
+                            Ext.Msg.alert('失败', obj.message);
+                        }
+                    },
+                    failure: function(response, opts) {
+                        Ext.Msg.alert('错误', '批量审核周报失败，请稍后重试');
+                    }
+                });
+            }
+        });
+    },
+
+    onExportWeeklyReportsClick: function() {
+        var url = '/weeklyreport/exportWeeklyReports';
+        window.location.href = url;
     },
 
 });

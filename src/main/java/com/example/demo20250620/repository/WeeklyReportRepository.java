@@ -30,4 +30,7 @@ public interface WeeklyReportRepository extends JpaRepository<WeeklyReport, Long
 
     @Query("SELECT wr FROM WeeklyReport wr LEFT JOIN FETCH wr.user ORDER BY wr.weekRange DESC")
     List<WeeklyReport> findAllWithUserList();
+
+    @Query("SELECT wr FROM WeeklyReport wr WHERE wr.detail = '待确认'")
+    List<WeeklyReport> findByDetailPending();
 }

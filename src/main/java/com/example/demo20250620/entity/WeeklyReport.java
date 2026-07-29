@@ -22,6 +22,9 @@ public class WeeklyReport {
     @JoinColumn(name = "user_id")
     private SysUser user;
 
+    @Column(name = "detail")
+    private String detail;
+
     @Column(name = "create_time")
     private LocalDateTime createTime;
 
@@ -69,6 +72,14 @@ public class WeeklyReport {
 
     public void setUser(SysUser user) {
         this.user = user;
+    }
+
+    public String getDetail() {
+        return detail;
+    }
+
+    public void setDetail(String detail) {
+        this.detail = detail;
     }
 
     public LocalDateTime getCreateTime() {

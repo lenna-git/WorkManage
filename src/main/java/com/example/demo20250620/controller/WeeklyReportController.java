@@ -215,6 +215,9 @@ public class WeeklyReportController {
 
             WeeklyReport existing = existingOpt.get();
             String detail = existing.getDetail();
+            if (detail == null || detail.isEmpty()) {
+                detail = "待确认";
+            }
 
             if ("待确认".equals(detail)) {
                 if (currentUserRole == null || currentUserRole != 2) {
@@ -273,6 +276,9 @@ public class WeeklyReportController {
 
             WeeklyReport existing = existingOpt.get();
             String detail = existing.getDetail();
+            if (detail == null || detail.isEmpty()) {
+                detail = "待确认";
+            }
 
             if ("待确认".equals(detail)) {
                 if (currentUserRole == null || currentUserRole != 2) {

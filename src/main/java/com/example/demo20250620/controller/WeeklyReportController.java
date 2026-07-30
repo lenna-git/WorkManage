@@ -14,8 +14,8 @@ import org.springframework.web.bind.annotation.*;
 
 import java.io.ByteArrayOutputStream;
 import java.time.LocalDate;
-import java.time.YearWeek;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.WeekFields;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -29,6 +29,15 @@ public class WeeklyReportController {
 
     @Autowired
     private WeeklyReportRepository weeklyReportRepository;
+
+    private LocalDate getFirstDayOfWeek(int year, int weekNumber) {
+        LocalDate jan1 = LocalDate.of(year, 1, 1);
+        LocalDate mondayOfFirstWeek = jan1.with(WeekFields.ISO.dayOfWeek(), 1);
+        if (mondayOfFirstWeek.getYear() < year) {
+            mondayOfFirstWeek = mondayOfFirstWeek.plusWeeks(1);
+        }
+        return mondayOfFirstWeek.plusWeeks(weekNumber - 1);
+    }
 
     @GetMapping("/allweeklyreports")
     public Map<String, Object> getAllWeeklyReports(
@@ -153,8 +162,7 @@ public class WeeklyReportController {
             @RequestParam int weekNumber) {
         Map<String, Object> responseObj = new HashMap<>();
         try {
-            YearWeek yearWeek = YearWeek.of(year, weekNumber);
-            LocalDate monday = yearWeek.atDay(1);
+            LocalDate monday = getFirstDayOfWeek(year, weekNumber);
             LocalDate sunday = monday.plusDays(6);
 
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
@@ -180,14 +188,22 @@ public class WeeklyReportController {
             int targetYear = year != null ? year : LocalDate.now().getYear();
             
             List<Map<String, Object>> weekNumbers = new ArrayList<>();
-            int currentWeek = YearWeek.now().getWeek().getValue();
+            WeekFields weekFields = WeekFields.ISO;
+            LocalDate today = LocalDate.now();
+            int currentWeek = today.get(weekFields.weekOfWeekBasedYear());
             
-            for (int i = 1; i <= 53; i++) {
+            int maxWeeks = 52;
+            LocalDate dec28 = LocalDate.of(targetYear, 12, 28);
+            int weekOfDec28 = dec28.get(weekFields.weekOfWeekBasedYear());
+            if (weekOfDec28 == 1) {
+                maxWeeks = 53;
+            }
+            
+            for (int i = 1; i <= maxWeeks; i++) {
                 try {
-                    YearWeek yearWeek = YearWeek.of(targetYear, i);
                     Map<String, Object> week = new HashMap<>();
                     week.put("weekNumber", i);
-                    LocalDate monday = yearWeek.atDay(1);
+                    LocalDate monday = getFirstDayOfWeek(targetYear, i);
                     LocalDate sunday = monday.plusDays(6);
                     DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM-dd");
                     week.put("label", "第" + i + "周 (" + monday.format(formatter) + " ~ " + sunday.format(formatter) + ")");
@@ -249,8 +265,7 @@ public class WeeklyReportController {
             }
 
             if (weeklyReport.getYear() != null && weeklyReport.getWeekNumber() != null) {
-                YearWeek yearWeek = YearWeek.of(weeklyReport.getYear(), weeklyReport.getWeekNumber());
-                LocalDate monday = yearWeek.atDay(1);
+                LocalDate monday = getFirstDayOfWeek(weeklyReport.getYear(), weeklyReport.getWeekNumber());
                 LocalDate sunday = monday.plusDays(6);
                 DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
                 weeklyReport.setWeekRange(monday.format(formatter) + " 至 " + sunday.format(formatter));
@@ -319,8 +334,7 @@ public class WeeklyReportController {
             existing.setYear(weeklyReport.getYear());
             existing.setWeekNumber(weeklyReport.getWeekNumber());
             if (weeklyReport.getYear() != null && weeklyReport.getWeekNumber() != null) {
-                YearWeek yearWeek = YearWeek.of(weeklyReport.getYear(), weeklyReport.getWeekNumber());
-                LocalDate monday = yearWeek.atDay(1);
+                LocalDate monday = getFirstDayOfWeek(weeklyReport.getYear(), weeklyReport.getWeekNumber());
                 LocalDate sunday = monday.plusDays(6);
                 DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
                 existing.setWeekRange(monday.format(formatter) + " 至 " + sunday.format(formatter));

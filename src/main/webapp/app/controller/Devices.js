@@ -2092,11 +2092,12 @@ Ext.define('AM.controller.Devices', {
                     success: function(response, opts) {
                         var obj = Ext.decode(response.responseText);
                         if (obj.success) {
-                            Ext.Msg.alert('成功', obj.message);
                             var grid = Ext.ComponentQuery.query('viewport > panel > centerpage > weeklyreport weeklyreportgrid')[0];
-                            if (grid) {
-                                grid.getStore().load();
-                            }
+                            Ext.Msg.alert('成功', obj.message, function() {
+                                if (grid) {
+                                    grid.getStore().load();
+                                }
+                            });
                         } else {
                             Ext.Msg.alert('失败', obj.message);
                         }
@@ -2121,11 +2122,12 @@ Ext.define('AM.controller.Devices', {
                     success: function(response, opts) {
                         var obj = Ext.decode(response.responseText);
                         if (obj.success) {
-                            Ext.Msg.alert('成功', obj.message);
                             var grid = Ext.ComponentQuery.query('viewport > panel > centerpage > weeklyreport weeklyreportgrid')[0];
-                            if (grid) {
-                                grid.getStore().load();
-                            }
+                            Ext.Msg.alert('成功', obj.message, function() {
+                                if (grid) {
+                                    grid.getStore().load();
+                                }
+                            });
                         } else {
                             Ext.Msg.alert('失败', obj.message);
                         }

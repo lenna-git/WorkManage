@@ -534,8 +534,8 @@ public class WeeklyReportController {
             for (WeeklyReport report : reports) {
                 Row row = sheet.createRow(rowNum);
                 row.createCell(0).setCellValue(rowNum);
-                row.createCell(1).setCellValue(report.getYear() != null ? report.getYear() : "");
-                row.createCell(2).setCellValue(report.getWeekNumber() != null ? report.getWeekNumber() : "");
+                row.createCell(1).setCellValue(report.getYear() != null ? String.valueOf(report.getYear()) : "");
+                row.createCell(2).setCellValue(report.getWeekNumber() != null ? String.valueOf(report.getWeekNumber()) : "");
                 row.createCell(3).setCellValue(report.getWeekRange() != null ? report.getWeekRange() : "");
                 row.createCell(4).setCellValue(report.getWorkContent() != null ? report.getWorkContent() : "");
                 row.createCell(5).setCellValue(report.getUser() != null && report.getUser().getSysusername() != null ? report.getUser().getSysusername() : "");

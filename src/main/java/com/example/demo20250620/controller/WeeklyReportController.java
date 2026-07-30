@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.io.ByteArrayOutputStream;
 import java.time.LocalDate;
+import java.time.YearWeek;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -71,6 +72,8 @@ public class WeeklyReportController {
             for (WeeklyReport report : pagedReports) {
                 Map<String, Object> item = new HashMap<>();
                 item.put("id", report.getId());
+                item.put("year", report.getYear());
+                item.put("weekNumber", report.getWeekNumber());
                 item.put("weekRange", report.getWeekRange());
                 item.put("workContent", report.getWorkContent());
                 item.put("detail", report.getDetail() != null ? report.getDetail() : "待确认");
@@ -144,6 +147,67 @@ public class WeeklyReportController {
         return responseObj;
     }
 
+    @GetMapping("/getWeekRangeByYearWeek")
+    public Map<String, Object> getWeekRangeByYearWeek(
+            @RequestParam int year,
+            @RequestParam int weekNumber) {
+        Map<String, Object> responseObj = new HashMap<>();
+        try {
+            YearWeek yearWeek = YearWeek.of(year, weekNumber);
+            LocalDate monday = yearWeek.atDay(1);
+            LocalDate sunday = monday.plusDays(6);
+
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+            String weekRange = monday.format(formatter) + " 至 " + sunday.format(formatter);
+
+            responseObj.put("success", true);
+            responseObj.put("year", year);
+            responseObj.put("weekNumber", weekNumber);
+            responseObj.put("weekRange", weekRange);
+            responseObj.put("monday", monday.format(formatter));
+            responseObj.put("sunday", sunday.format(formatter));
+        } catch (Exception e) {
+            responseObj.put("success", false);
+            responseObj.put("message", "获取周范围失败: " + e.getMessage());
+        }
+        return responseObj;
+    }
+
+    @GetMapping("/getWeekNumbers")
+    public Map<String, Object> getWeekNumbers(@RequestParam(required = false) Integer year) {
+        Map<String, Object> responseObj = new HashMap<>();
+        try {
+            int targetYear = year != null ? year : LocalDate.now().getYear();
+            
+            List<Map<String, Object>> weekNumbers = new ArrayList<>();
+            int currentWeek = YearWeek.now().getWeek().getValue();
+            
+            for (int i = 1; i <= 53; i++) {
+                try {
+                    YearWeek yearWeek = YearWeek.of(targetYear, i);
+                    Map<String, Object> week = new HashMap<>();
+                    week.put("weekNumber", i);
+                    LocalDate monday = yearWeek.atDay(1);
+                    LocalDate sunday = monday.plusDays(6);
+                    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM-dd");
+                    week.put("label", "第" + i + "周 (" + monday.format(formatter) + " ~ " + sunday.format(formatter) + ")");
+                    weekNumbers.add(week);
+                } catch (Exception e) {
+                    break;
+                }
+            }
+
+            responseObj.put("success", true);
+            responseObj.put("currentYear", targetYear);
+            responseObj.put("currentWeek", currentWeek);
+            responseObj.put("data", weekNumbers);
+        } catch (Exception e) {
+            responseObj.put("success", false);
+            responseObj.put("message", "获取周序号列表失败: " + e.getMessage());
+        }
+        return responseObj;
+    }
+
     @GetMapping("/getWeekRangeList")
     public Map<String, Object> getWeekRangeList() {
         Map<String, Object> responseObj = new HashMap<>();
@@ -182,6 +246,14 @@ public class WeeklyReportController {
                 if (currentUser.isPresent()) {
                     weeklyReport.setUser(currentUser.get());
                 }
+            }
+
+            if (weeklyReport.getYear() != null && weeklyReport.getWeekNumber() != null) {
+                YearWeek yearWeek = YearWeek.of(weeklyReport.getYear(), weeklyReport.getWeekNumber());
+                LocalDate monday = yearWeek.atDay(1);
+                LocalDate sunday = monday.plusDays(6);
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+                weeklyReport.setWeekRange(monday.format(formatter) + " 至 " + sunday.format(formatter));
             }
 
             weeklyReport.setDetail("待确认");
@@ -244,7 +316,17 @@ public class WeeklyReportController {
                 }
             }
 
-            existing.setWeekRange(weeklyReport.getWeekRange());
+            existing.setYear(weeklyReport.getYear());
+            existing.setWeekNumber(weeklyReport.getWeekNumber());
+            if (weeklyReport.getYear() != null && weeklyReport.getWeekNumber() != null) {
+                YearWeek yearWeek = YearWeek.of(weeklyReport.getYear(), weeklyReport.getWeekNumber());
+                LocalDate monday = yearWeek.atDay(1);
+                LocalDate sunday = monday.plusDays(6);
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+                existing.setWeekRange(monday.format(formatter) + " 至 " + sunday.format(formatter));
+            } else {
+                existing.setWeekRange(weeklyReport.getWeekRange());
+            }
             existing.setWorkContent(weeklyReport.getWorkContent());
 
             WeeklyReport updatedReport = weeklyReportRepository.save(existing);
@@ -423,7 +505,7 @@ public class WeeklyReportController {
             Sheet sheet = workbook.createSheet("周报");
 
             Row headerRow = sheet.createRow(0);
-            String[] headers = {"序号", "周范围", "工作内容", "用户", "状态"};
+            String[] headers = {"序号", "年份", "周序号", "日期范围", "工作内容", "用户", "状态"};
             for (int i = 0; i < headers.length; i++) {
                 Cell cell = headerRow.createCell(i);
                 cell.setCellValue(headers[i]);
@@ -438,10 +520,12 @@ public class WeeklyReportController {
             for (WeeklyReport report : reports) {
                 Row row = sheet.createRow(rowNum);
                 row.createCell(0).setCellValue(rowNum);
-                row.createCell(1).setCellValue(report.getWeekRange() != null ? report.getWeekRange() : "");
-                row.createCell(2).setCellValue(report.getWorkContent() != null ? report.getWorkContent() : "");
-                row.createCell(3).setCellValue(report.getUser() != null && report.getUser().getSysusername() != null ? report.getUser().getSysusername() : "");
-                row.createCell(4).setCellValue(report.getDetail() != null ? report.getDetail() : "待确认");
+                row.createCell(1).setCellValue(report.getYear() != null ? report.getYear() : "");
+                row.createCell(2).setCellValue(report.getWeekNumber() != null ? report.getWeekNumber() : "");
+                row.createCell(3).setCellValue(report.getWeekRange() != null ? report.getWeekRange() : "");
+                row.createCell(4).setCellValue(report.getWorkContent() != null ? report.getWorkContent() : "");
+                row.createCell(5).setCellValue(report.getUser() != null && report.getUser().getSysusername() != null ? report.getUser().getSysusername() : "");
+                row.createCell(6).setCellValue(report.getDetail() != null ? report.getDetail() : "待确认");
                 rowNum++;
             }
 

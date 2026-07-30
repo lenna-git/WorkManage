@@ -2,6 +2,8 @@ Ext.define('AM.model.weeklyreport',{
     extend:'Ext.data.Model',
     fields:[
         {name:'id',type:'int'},
+        {name:'year',type:'int'},
+        {name:'weekNumber',type:'int'},
         {name:'weekRange',type:'string'},
         {name:'workContent',type:'string'},
         {name:'detail',type:'string'},

@@ -12,6 +12,12 @@ public class WeeklyReport {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(name = "year")
+    private Integer year;
+
+    @Column(name = "week_number")
+    private Integer weekNumber;
+
     @Column(name = "week_range", nullable = false)
     private String weekRange;
 
@@ -48,6 +54,22 @@ public class WeeklyReport {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public Integer getYear() {
+        return year;
+    }
+
+    public void setYear(Integer year) {
+        this.year = year;
+    }
+
+    public Integer getWeekNumber() {
+        return weekNumber;
+    }
+
+    public void setWeekNumber(Integer weekNumber) {
+        this.weekNumber = weekNumber;
     }
 
     public String getWeekRange() {

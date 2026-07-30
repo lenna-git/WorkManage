@@ -1832,97 +1832,181 @@ Ext.define('AM.controller.Devices', {
     },
 
     onAddWeeklyReportClick: function() {
-        Ext.Ajax.request({
-            url: '/weeklyreport/getWeekRange',
-            method: 'GET',
-            success: function(response, opts) {
-                var obj = Ext.decode(response.responseText);
-                var defaultWeekRange = obj.success ? obj.weekRange : '';
+        var currentYear = new Date().getFullYear();
+        var currentWeek = 1;
+        var yearField, weekCombo, weekRangeField;
 
-                var addWindow = Ext.create('Ext.window.Window', {
-                    title: '新增周报',
-                    width: 450,
-                    modal: true,
-                    layout: 'vbox',
-                    align: 'center',
-                    items: [{
-                        xtype: 'textfield',
-                        fieldLabel: '周',
-                        name: 'weekRange',
-                        width: 400,
-                        labelWidth: 60,
-                        margin: '10 0 10 0',
-                        value: defaultWeekRange,
-                        readOnly: true,
-                        allowBlank: false
-                    }, {
-                        xtype: 'textarea',
-                        fieldLabel: '工作内容',
-                        name: 'workContent',
-                        width: 400,
-                        labelWidth: 60,
-                        margin: '0 0 10 0',
-                        height: 150,
-                        emptyText: '请输入本周工作内容',
-                        allowBlank: false
-                    }],
-                    buttons: [{
-                        text: '取消',
-                        handler: function() {
-                            addWindow.close();
+        var addWindow = Ext.create('Ext.window.Window', {
+            title: '新增周报',
+            width: 500,
+            modal: true,
+            layout: 'vbox',
+            align: 'center',
+            items: [{
+                xtype: 'numberfield',
+                fieldLabel: '年份',
+                name: 'year',
+                width: 400,
+                labelWidth: 80,
+                margin: '10 0 10 0',
+                value: currentYear,
+                minValue: 2020,
+                maxValue: 2035,
+                editable: false,
+                listeners: {
+                    change: function(field, newValue) {
+                        if (newValue) {
+                            loadWeekNumbers(newValue);
                         }
-                    }, {
-                        text: '确定',
-                        handler: function() {
-                            var weekRange = addWindow.down('textfield[name=weekRange]').getValue();
-                            var workContent = addWindow.down('textarea[name=workContent]').getValue();
+                    }
+                }
+            }, {
+                xtype: 'combo',
+                fieldLabel: '周序号',
+                name: 'weekNumber',
+                width: 400,
+                labelWidth: 80,
+                margin: '0 0 10 0',
+                store: Ext.create('Ext.data.Store', {
+                    fields: ['weekNumber', 'label'],
+                    data: []
+                }),
+                displayField: 'label',
+                valueField: 'weekNumber',
+                queryMode: 'local',
+                allowBlank: false,
+                listeners: {
+                    select: function(combo, records) {
+                        if (records.length > 0) {
+                            var weekNum = records[0].get('weekNumber');
+                            var year = addWindow.down('numberfield[name=year]').getValue();
+                            updateWeekRange(year, weekNum);
+                        }
+                    }
+                }
+            }, {
+                xtype: 'textfield',
+                fieldLabel: '日期',
+                name: 'weekRange',
+                width: 400,
+                labelWidth: 80,
+                margin: '0 0 10 0',
+                readOnly: true,
+                allowBlank: false
+            }, {
+                xtype: 'textarea',
+                fieldLabel: '工作内容',
+                name: 'workContent',
+                width: 400,
+                labelWidth: 80,
+                margin: '0 0 10 0',
+                height: 150,
+                emptyText: '请输入本周工作内容',
+                allowBlank: false
+            }],
+            buttons: [{
+                text: '取消',
+                handler: function() {
+                    addWindow.close();
+                }
+            }, {
+                text: '确定',
+                handler: function() {
+                    var year = addWindow.down('numberfield[name=year]').getValue();
+                    var weekNumber = addWindow.down('combo[name=weekNumber]').getValue();
+                    var weekRange = addWindow.down('textfield[name=weekRange]').getValue();
+                    var workContent = addWindow.down('textarea[name=workContent]').getValue();
 
-                            if (!weekRange || weekRange.trim() === '') {
-                                Ext.Msg.alert('提示', '请选择周范围');
-                                return;
-                            }
-                            if (!workContent || workContent.trim() === '') {
-                                Ext.Msg.alert('提示', '请输入工作内容');
-                                return;
-                            }
+                    if (!year) {
+                        Ext.Msg.alert('提示', '请选择年份');
+                        return;
+                    }
+                    if (!weekNumber) {
+                        Ext.Msg.alert('提示', '请选择周序号');
+                        return;
+                    }
+                    if (!weekRange || weekRange.trim() === '') {
+                        Ext.Msg.alert('提示', '日期不能为空');
+                        return;
+                    }
+                    if (!workContent || workContent.trim() === '') {
+                        Ext.Msg.alert('提示', '请输入工作内容');
+                        return;
+                    }
 
-                            Ext.Ajax.request({
-                                url: '/weeklyreport/createWeeklyReport',
-                                method: 'POST',
-                                jsonData: {
-                                    weekRange: weekRange.trim(),
-                                    workContent: workContent.trim()
-                                },
-                                headers: {
-                                    'Content-Type': 'application/json'
-                                },
-                                success: function(response, opts) {
-                                    var obj = Ext.decode(response.responseText);
-                                    if (obj.success) {
-                                        addWindow.close();
-                                        Ext.Msg.alert('成功', obj.message, function() {
-                                            var grid = Ext.ComponentQuery.query('viewport > panel > centerpage > weeklyreport weeklyreportgrid')[0];
-                                            if (grid) {
-                                                grid.getStore().load();
-                                            }
-                                        });
-                                    } else {
-                                        Ext.Msg.alert('失败', obj.message);
+                    Ext.Ajax.request({
+                        url: '/weeklyreport/createWeeklyReport',
+                        method: 'POST',
+                        jsonData: {
+                            year: year,
+                            weekNumber: weekNumber,
+                            weekRange: weekRange.trim(),
+                            workContent: workContent.trim()
+                        },
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        success: function(response, opts) {
+                            var obj = Ext.decode(response.responseText);
+                            if (obj.success) {
+                                addWindow.close();
+                                Ext.Msg.alert('成功', obj.message, function() {
+                                    var grid = Ext.ComponentQuery.query('viewport > panel > centerpage > weeklyreport weeklyreportgrid')[0];
+                                    if (grid) {
+                                        grid.getStore().load();
                                     }
-                                },
-                                failure: function(response, opts) {
-                                    Ext.Msg.alert('错误', '创建周报失败，请稍后重试');
-                                }
-                            });
+                                });
+                            } else {
+                                Ext.Msg.alert('失败', obj.message);
+                            }
+                        },
+                        failure: function(response, opts) {
+                            Ext.Msg.alert('错误', '创建周报失败，请稍后重试');
                         }
-                    }]
-                });
-                addWindow.show();
-            },
-            failure: function(response, opts) {
-                Ext.Msg.alert('错误', '获取周范围失败，请稍后重试');
-            }
+                    });
+                }
+            }]
         });
+
+        function loadWeekNumbers(year) {
+            var weekCombo = addWindow.down('combo[name=weekNumber]');
+            if (!weekCombo) return;
+            
+            Ext.Ajax.request({
+                url: '/weeklyreport/getWeekNumbers?year=' + year,
+                method: 'GET',
+                success: function(response) {
+                    var obj = Ext.decode(response.responseText);
+                    if (obj.success) {
+                        weekCombo.getStore().loadData(obj.data);
+                        weekCombo.setValue(null);
+                        if (obj.currentWeek) {
+                            weekCombo.setValue(obj.currentWeek);
+                            updateWeekRange(year, obj.currentWeek);
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateWeekRange(year, weekNumber) {
+            var weekRangeField = addWindow.down('textfield[name=weekRange]');
+            if (!weekRangeField) return;
+            
+            Ext.Ajax.request({
+                url: '/weeklyreport/getWeekRangeByYearWeek?year=' + year + '&weekNumber=' + weekNumber,
+                method: 'GET',
+                success: function(response) {
+                    var obj = Ext.decode(response.responseText);
+                    if (obj.success) {
+                        weekRangeField.setValue(obj.weekRange);
+                    }
+                }
+            });
+        }
+
+        addWindow.show();
+        loadWeekNumbers(currentYear);
     },
 
     onEditWeeklyReportClick: function(recordId) {
@@ -1936,23 +2020,65 @@ Ext.define('AM.controller.Devices', {
             return;
         }
 
-        var weekRange = record.get('weekRange');
+        var year = record.get('year') || new Date().getFullYear();
+        var weekNumber = record.get('weekNumber') || 1;
         var workContent = record.get('workContent');
 
         var editWindow = Ext.create('Ext.window.Window', {
             title: '修改周报',
-            width: 450,
+            width: 500,
             modal: true,
             layout: 'vbox',
             align: 'center',
             items: [{
+                xtype: 'numberfield',
+                fieldLabel: '年份',
+                name: 'year',
+                width: 400,
+                labelWidth: 80,
+                margin: '10 0 10 0',
+                value: year,
+                minValue: 2020,
+                maxValue: 2035,
+                editable: false,
+                listeners: {
+                    change: function(field, newValue) {
+                        if (newValue) {
+                            loadWeekNumbers(newValue);
+                        }
+                    }
+                }
+            }, {
+                xtype: 'combo',
+                fieldLabel: '周序号',
+                name: 'weekNumber',
+                width: 400,
+                labelWidth: 80,
+                margin: '0 0 10 0',
+                store: Ext.create('Ext.data.Store', {
+                    fields: ['weekNumber', 'label'],
+                    data: []
+                }),
+                displayField: 'label',
+                valueField: 'weekNumber',
+                queryMode: 'local',
+                allowBlank: false,
+                listeners: {
+                    select: function(combo, records) {
+                        if (records.length > 0) {
+                            var weekNum = records[0].get('weekNumber');
+                            var yr = editWindow.down('numberfield[name=year]').getValue();
+                            updateWeekRange(yr, weekNum);
+                        }
+                    }
+                }
+            }, {
                 xtype: 'textfield',
-                fieldLabel: '周',
+                fieldLabel: '日期',
                 name: 'weekRange',
                 width: 400,
-                labelWidth: 60,
-                margin: '10 0 10 0',
-                value: weekRange || '',
+                labelWidth: 80,
+                margin: '0 0 10 0',
                 readOnly: true,
                 allowBlank: false
             }, {
@@ -1960,7 +2086,7 @@ Ext.define('AM.controller.Devices', {
                 fieldLabel: '工作内容',
                 name: 'workContent',
                 width: 400,
-                labelWidth: 60,
+                labelWidth: 80,
                 margin: '0 0 10 0',
                 height: 150,
                 value: workContent || '',
@@ -1974,14 +2100,24 @@ Ext.define('AM.controller.Devices', {
             }, {
                 text: '确定',
                 handler: function() {
+                    var yr = editWindow.down('numberfield[name=year]').getValue();
+                    var weekNum = editWindow.down('combo[name=weekNumber]').getValue();
                     var weekRange = editWindow.down('textfield[name=weekRange]').getValue();
-                    var workContent = editWindow.down('textarea[name=workContent]').getValue();
+                    var workContentVal = editWindow.down('textarea[name=workContent]').getValue();
 
-                    if (!weekRange || weekRange.trim() === '') {
-                        Ext.Msg.alert('提示', '请选择周范围');
+                    if (!yr) {
+                        Ext.Msg.alert('提示', '请选择年份');
                         return;
                     }
-                    if (!workContent || workContent.trim() === '') {
+                    if (!weekNum) {
+                        Ext.Msg.alert('提示', '请选择周序号');
+                        return;
+                    }
+                    if (!weekRange || weekRange.trim() === '') {
+                        Ext.Msg.alert('提示', '日期不能为空');
+                        return;
+                    }
+                    if (!workContentVal || workContentVal.trim() === '') {
                         Ext.Msg.alert('提示', '请输入工作内容');
                         return;
                     }
@@ -1991,8 +2127,10 @@ Ext.define('AM.controller.Devices', {
                         method: 'PUT',
                         jsonData: {
                             id: recordId,
+                            year: yr,
+                            weekNumber: weekNum,
                             weekRange: weekRange.trim(),
-                            workContent: workContent.trim()
+                            workContent: workContentVal.trim()
                         },
                         headers: {
                             'Content-Type': 'application/json'
@@ -2018,7 +2156,45 @@ Ext.define('AM.controller.Devices', {
                 }
             }]
         });
+
+        function loadWeekNumbers(yr) {
+            var weekCombo = editWindow.down('combo[name=weekNumber]');
+            if (!weekCombo) return;
+            
+            Ext.Ajax.request({
+                url: '/weeklyreport/getWeekNumbers?year=' + yr,
+                method: 'GET',
+                success: function(response) {
+                    var obj = Ext.decode(response.responseText);
+                    if (obj.success) {
+                        weekCombo.getStore().loadData(obj.data);
+                        weekCombo.setValue(weekNumber);
+                        if (weekNumber) {
+                            updateWeekRange(yr, weekNumber);
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateWeekRange(yr, wkNum) {
+            var weekRangeField = editWindow.down('textfield[name=weekRange]');
+            if (!weekRangeField) return;
+            
+            Ext.Ajax.request({
+                url: '/weeklyreport/getWeekRangeByYearWeek?year=' + yr + '&weekNumber=' + wkNum,
+                method: 'GET',
+                success: function(response) {
+                    var obj = Ext.decode(response.responseText);
+                    if (obj.success) {
+                        weekRangeField.setValue(obj.weekRange);
+                    }
+                }
+            });
+        }
+
         editWindow.show();
+        loadWeekNumbers(year);
     },
 
     onDeleteWeeklyReportClick: function(recordId) {

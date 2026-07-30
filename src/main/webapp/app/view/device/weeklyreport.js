@@ -126,7 +126,22 @@ Ext.define('AM.view.device.weeklyreportgrid',{
             }
         },
         {
-            text:'周',
+            text:'年份',
+            align:'center',
+            dataIndex:'year',
+            width:80
+        },
+        {
+            text:'周序号',
+            align:'center',
+            dataIndex:'weekNumber',
+            width:80,
+            renderer:function(value){
+                return value ? '第' + value + '周' : '';
+            }
+        },
+        {
+            text:'日期',
             align:'center',
             dataIndex:'weekRange',
             flex:2
@@ -135,7 +150,7 @@ Ext.define('AM.view.device.weeklyreportgrid',{
             text:'工作内容',
             align:'center',
             dataIndex:'workContent',
-            flex:4,
+            flex:3,
             renderer:function(value){
                 if(value && value.length > 50){
                     return value.substring(0,50) + '...';

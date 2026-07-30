@@ -4,6 +4,7 @@ Ext.define('AM.model.weeklyreport',{
         {name:'id',type:'int'},
         {name:'weekRange',type:'string'},
         {name:'workContent',type:'string'},
+        {name:'detail',type:'string'},
         {name:'username',type:'string'},
         {name:'createTime',type:'string'},
         {name:'updateTime',type:'string'}

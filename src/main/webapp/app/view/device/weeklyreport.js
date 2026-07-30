@@ -173,6 +173,9 @@ Ext.define('AM.view.device.weeklyreportgrid',{
                 var isAdmin = currentWeeklyReportUserRole === 1;
                 var isNormalUser = currentWeeklyReportUserRole === 2;
                 
+                console.log('=== WeeklyReport Renderer Debug ===');
+                console.log('ID:', id, 'Detail:', detail, 'Role:', currentWeeklyReportUserRole, 'isAdmin:', isAdmin, 'isNormalUser:', isNormalUser);
+                
                 if(isAdmin){
                     if(detail === '审核通过'){
                         actions.push('<a href="#" style="color:blue;margin-right:10px;" onclick="Ext.ComponentQuery.query(\'viewport > panel > centerpage > weeklyreport\')[0].fireEvent(\'editweeklyreportclick\',' + id + ')">修改</a>');
@@ -207,11 +210,16 @@ Ext.define('AM.view.device.weeklyreportgrid',{
             async: false,
             success: function(response){
                 var result = Ext.JSON.decode(response.responseText);
+                console.log('=== checkRole Debug ===', result);
                 if(result.success){
                     currentWeeklyReportUserRole = result.role;
                 }
+            },
+            failure: function(response){
+                console.log('=== checkRole Failed ===', response);
             }
         });
+        console.log('=== currentWeeklyReportUserRole ===', currentWeeklyReportUserRole);
         
         this.callParent(arguments);
         

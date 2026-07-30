@@ -61,6 +61,12 @@ public class WeeklyReportController {
             int end = Math.min(start + size, reports.size());
             List<WeeklyReport> pagedReports = reports.subList(Math.max(0, Math.min(start, reports.size())), end);
 
+            System.out.println("=== getAllWeeklyReports Debug ===");
+            System.out.println("Total reports: " + reports.size() + ", page: " + page + ", size: " + size);
+            for (WeeklyReport r : reports) {
+                System.out.println("ID: " + r.getId() + ", Detail: " + r.getDetail());
+            }
+
             List<Map<String, Object>> dataList = new ArrayList<>();
             for (WeeklyReport report : pagedReports) {
                 Map<String, Object> item = new HashMap<>();
@@ -338,7 +344,9 @@ public class WeeklyReportController {
             WeeklyReport existing = existingOpt.get();
             existing.setDetail("审核通过");
 
-            weeklyReportRepository.save(existing);
+            WeeklyReport saved = weeklyReportRepository.saveAndFlush(existing);
+            System.out.println("=== approveWeeklyReport Debug ===");
+            System.out.println("ID: " + saved.getId() + ", Detail: " + saved.getDetail());
             responseObj.put("success", true);
             responseObj.put("message", "周报审核通过");
         } catch (Exception e) {
@@ -380,6 +388,7 @@ public class WeeklyReportController {
                 weeklyReportRepository.save(report);
                 count++;
             }
+            weeklyReportRepository.flush();
 
             responseObj.put("success", true);
             responseObj.put("message", "成功审核通过 " + count + " 条周报");

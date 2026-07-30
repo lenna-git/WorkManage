@@ -105,6 +105,8 @@ Ext.define('AM.view.device.weeklyreport',{
     ]
 });
 
+var currentWeeklyReportUserRole = 0;
+
 Ext.define('AM.view.device.weeklyreportgrid',{
     extend:'Ext.grid.Panel',
     alias:'widget.weeklyreportgrid',
@@ -163,17 +165,27 @@ Ext.define('AM.view.device.weeklyreportgrid',{
         {
             text:'操作',
             align:'center',
-            width:200,
+            width:250,
             renderer:function(value,metaData,record){
                 var actions = [];
                 var detail = record.get('detail') || '待确认';
                 var id = record.get('id');
+                var isAdmin = currentWeeklyReportUserRole === 1;
+                var isNormalUser = currentWeeklyReportUserRole === 2;
                 
-                actions.push('<a href="#" style="color:blue;margin-right:10px;" onclick="Ext.ComponentQuery.query(\'viewport > panel > centerpage > weeklyreport\')[0].fireEvent(\'editweeklyreportclick\',' + id + ')">修改</a>');
-                actions.push('<a href="#" style="color:red;margin-right:10px;" onclick="Ext.ComponentQuery.query(\'viewport > panel > centerpage > weeklyreport\')[0].fireEvent(\'deleteweeklyreportclick\',' + id + ')">删除</a>');
-                
-                if(detail === '待确认'){
-                    actions.push('<a href="#" style="color:green;" onclick="Ext.ComponentQuery.query(\'viewport > panel > centerpage > weeklyreport\')[0].fireEvent(\'approveweeklyreportclick\',' + id + ')">审核</a>');
+                if(isAdmin){
+                    if(detail === '审核通过'){
+                        actions.push('<a href="#" style="color:blue;margin-right:10px;" onclick="Ext.ComponentQuery.query(\'viewport > panel > centerpage > weeklyreport\')[0].fireEvent(\'editweeklyreportclick\',' + id + ')">修改</a>');
+                        actions.push('<a href="#" style="color:red;margin-right:10px;" onclick="Ext.ComponentQuery.query(\'viewport > panel > centerpage > weeklyreport\')[0].fireEvent(\'deleteweeklyreportclick\',' + id + ')">删除</a>');
+                    }
+                    if(detail === '待确认'){
+                        actions.push('<a href="#" style="color:green;" onclick="Ext.ComponentQuery.query(\'viewport > panel > centerpage > weeklyreport\')[0].fireEvent(\'approveweeklyreportclick\',' + id + ')">审核</a>');
+                    }
+                } else if(isNormalUser){
+                    if(detail === '待确认'){
+                        actions.push('<a href="#" style="color:blue;margin-right:10px;" onclick="Ext.ComponentQuery.query(\'viewport > panel > centerpage > weeklyreport\')[0].fireEvent(\'editweeklyreportclick\',' + id + ')">修改</a>');
+                        actions.push('<a href="#" style="color:red;margin-right:10px;" onclick="Ext.ComponentQuery.query(\'viewport > panel > centerpage > weeklyreport\')[0].fireEvent(\'deleteweeklyreportclick\',' + id + ')">删除</a>');
+                    }
                 }
                 
                 return actions.join('');
@@ -189,6 +201,18 @@ Ext.define('AM.view.device.weeklyreportgrid',{
     },
     initComponent: function() {
         var me = this;
+        
+        Ext.Ajax.request({
+            url: '/weeklyreport/checkRole',
+            async: false,
+            success: function(response){
+                var result = Ext.JSON.decode(response.responseText);
+                if(result.success){
+                    currentWeeklyReportUserRole = result.role;
+                }
+            }
+        });
+        
         this.callParent(arguments);
         
         this.on('itemdblclick', function(grid, record) {
